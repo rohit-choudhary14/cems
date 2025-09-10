@@ -15,7 +15,7 @@ if (empty($data['id'])) {
 }
 
 // Get current user ID from rj_code
-$stmt = $pdo->prepare("SELECT id FROM users WHERE rj_code = ?");
+$stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
 $stmt->execute([$_SESSION['user_rjcode']]);
 $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -24,9 +24,8 @@ if (!$currentUser) {
     exit;
 }
 
-$user_id = $currentUser['id'];
+$user_id = $currentUser['rjcode'];
 
-// Step 1: Check if this event was created by current user
 $stmt = $pdo->prepare("SELECT created_by FROM events WHERE id = ?");
 $stmt->execute([$data['id']]);
 $event = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -43,12 +42,8 @@ if ($event['created_by'] != $user_id) {
 
 try {
     $pdo->beginTransaction();
-
-    // Step 2: Delete invitations for this event
     $stmt = $pdo->prepare("DELETE FROM event_invitations WHERE event_id = ?");
     $stmt->execute([$data['id']]);
-
-    // Step 3: Delete all invitee copies (if duplicates stored in events table)
     $stmt = $pdo->prepare("DELETE FROM events WHERE id = :id OR (created_by = :creator AND id = :id)");
     $stmt->execute([
         ':id' => $data['id'],

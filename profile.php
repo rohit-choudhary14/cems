@@ -513,7 +513,7 @@ if ($currentUser) {
     }
 
     .flatpickr-day {
-      border-radius: 0px !important;
+      border-radius: 5px !important;
     }
 
     .flatpickr-innerContainer {
@@ -722,43 +722,344 @@ if ($currentUser) {
       }
     }
 
-    #toastContainer {
+
+    .notification-container {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
       z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 12px;
     }
 
-    .toast {
-      min-width: 250px;
-      margin-bottom: 12px;
-      padding: 14px 20px;
-      border-radius: 8px;
+    .notification {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       color: #fff;
-      font-size: 14px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      opacity: 0;
-      transform: translateX(100%);
-      transition: all 0.5s ease;
+      font-family: "Segoe UI", sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      min-width: 280px;
+      max-width: 350px;
+      backdrop-filter: blur(8px);
+      animation: slideIn 0.35s ease-out;
+      overflow: hidden;
     }
 
-    .toast.show {
+    .notification img {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .notification .close-btn {
+      margin-left: auto;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      opacity: 0.7;
+      transition: 0.2s;
+    }
+
+    .notification .close-btn:hover {
       opacity: 1;
-      transform: translateX(0);
     }
 
-    .toast.success {
-      background-color: #28a745;
+    /* Progress bar */
+    .progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.7);
+      width: 100%;
+      animation: shrink linear forwards;
     }
 
-    .toast.error {
-      background-color: #dc3545;
+    /* Colors */
+    .success {
+      background: linear-gradient(135deg, #28a745, #218838);
     }
 
-    .toast.info {
-      background-color: #17a2b8;
+    .error {
+      background: linear-gradient(135deg, #dc3545, #a71d2a);
+    }
+
+    .info {
+      background: linear-gradient(135deg, #17a2b8, #11707f);
+    }
+
+    .warning {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      color: #000;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes shrink {
+      from {
+        width: 100%;
+      }
+
+      to {
+        width: 0;
+      }
     }
   </style>
+  <style>
+    /* Overlay */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1040;
+    }
+
+    /* Panel */
+    .notification-panel {
+      position: fixed;
+      top: 0;
+      right: -450px;
+      width: 400px;
+      height: 100%;
+      background: #f9f9fb;
+      box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+      border-left: 1px solid #ddd;
+      border-radius: 12px 0 0 12px;
+      padding: 20px;
+      transition: right 0.3s ease-in-out;
+      z-index: 1050;
+      overflow-y: auto;
+    }
+
+    .notification-panel.active {
+      right: 0;
+    }
+
+    .panel-header {
+      border-bottom: 1px solid #e2e2e2;
+      padding-bottom: 10px;
+    }
+
+    .custom-tabs .nav-link {
+      border: none;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .custom-tabs .nav-link.active {
+      color: #fff;
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      border-radius: 20px;
+    }
+
+    /* Notification Cards */
+    .notif-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s;
+    }
+
+    .notif-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .notif-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .notif-body {
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .notif-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .notification-panel.mobile{
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .notification-panel {
+        width: 100%;
+        height: 70%;
+        max-height: 80%;
+        right: 0;
+        bottom: -100%;
+        top: auto;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+        transition: bottom 0.3s ease-in-out;
+      }
+
+      .notification-panel.active {
+        bottom: 0;
+      }
+
+      /* Tabs pinned at top inside bottom sheet */
+      .custom-tabs {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        z-index: 10;
+      }
+
+      .panel-header {
+        padding: 12px 16px;
+        font-size: 1.1rem;
+      }
+
+      .notif-card {
+        padding: 14px;
+      }
+    }
+
+
+    /* For very small screens (e.g. 360px width phones) */
+    @media (max-width: 480px) {
+      .notif-card {
+        font-size: 0.85rem;
+        padding: 15px;
+      }
+
+      .notif-title {
+        font-size: 0.95rem;
+      }
+
+      .notif-body {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Bottom Sheet Notification Panel */
+    .notification-panel.mobile {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -100%;
+      height: 75%;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      transition: bottom 0.35s ease-in-out;
+      z-index: 1050;
+      overflow-y: auto;
+      padding-bottom: 20px;
+    }
+
+    .notification-panel.mobile.active {
+      bottom: 0;
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      background: #0074ff;
+      color: #fff;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .notif-card {
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .notif-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .notif-body {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .notif-actions button {
+      margin-right: 5px;
+    }
+
+    /* Overlay */
+    .notif-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1040;
+    }
+
+    /* Bottom Sheet */
+    .notif-sheet {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      right: 0;
+      height: 70%;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 1050;
+      transition: bottom 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Active states */
+    .notif-sheet.active {
+      bottom: 0;
+    }
+
+    .notif-overlay.active {
+      display: block;
+    }
+
+    /* Header */
+    .sheet-header {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      position: relative;
+    }
+
+    .drag-handle {
+      width: 50px;
+      height: 5px;
+      background: #ccc;
+      border-radius: 5px;
+      margin: 6px auto;
+    }
+
+    .sheet-content {
+      overflow-y: auto;
+      flex-grow: 1;
+      padding: 10px;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -790,88 +1091,126 @@ if ($currentUser) {
             </ul>
           </div>
           <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-              id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i style="font-size:20px" class="fa">&#xf0f3;</i>
-              <sup class="badge bg-danger rounded-pill ms-1">
-                <?php echo count($IncommingNotifications) + count($selfRequestNotification) ?>
-              </sup>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" aria-labelledby="notificationDropdown"
-              style="width: 350px; max-height: 450px; overflow-y: auto; border-radius: 12px;">
-              <li class="px-2 py-1 text-muted small fw-bold border-bottom">
-                Incoming Invitations
-              </li>
-              <?php if (!empty($IncommingNotifications)): ?>
-                <?php foreach ($IncommingNotifications as $n): ?>
-                  <li class="dropdown-item d-flex flex-column align-items-start">
-                    <div class="w-100 p-2 rounded bg-light mb-2 shadow-sm">
-                      <div class="fw-semibold text-primary">
-                        <?= htmlspecialchars($n['inviter_rjcode']) ?>
-                        <span class="text-muted small">invited you</span>
-                      </div>
-                      <div class="small text-dark mb-1">
-                        Event: <em><?= htmlspecialchars($n['title']) ?></em>
-                      </div>
-                      <?php if ($n['status'] === 'pending'): ?>
-                        <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-success flex-fill invite-action-btn" data-id="<?= $n['id'] ?>"
-                            data-action="accept">Accept</button>
-                          <button class="btn btn-sm btn-outline-danger flex-fill invite-action-btn" data-id="<?= $n['id'] ?>"
-                            data-action="reject">Reject</button>
-                        </div>
-                      <?php else: ?>
-                        <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
-                      <?php endif; ?>
-                    </div>
-                  </li>
-                <?php endforeach; ?>
-              <?php else: ?>
-                <li class="dropdown-item text-center text-muted py-3">
-                  <em>No incoming invitations</em>
-                </li>
-              <?php endif; ?>
-              <li class="px-2 py-1 text-muted small fw-bold border-top border-bottom mt-2">
-                My Sent Invites
-              </li>
-              <?php if (!empty($selfRequestNotification)): ?>
-                <?php foreach ($selfRequestNotification as $note): ?>
-                  <li class="dropdown-item d-flex flex-column align-items-start">
-                    <div class="w-100 p-2 rounded bg-white border mb-2 shadow-sm">
-                      <div class="fw-semibold">
-                        To: <span class="text-primary"><?= htmlspecialchars($note['invitee_rjcode']) ?></span>
-                      </div>
-                      <div class="small text-dark mb-1">
-                        Event: <em><?= htmlspecialchars($note['event_title']) ?></em>
-                      </div>
-                      <div>
-                        Status:
-                        <?php if ($note['status'] === 'pending'): ?>
-                          <span class="badge bg-warning text-dark" style="padding: 10px;">Pending</span>
-                          <button class="btn btn-sm btn-outline-danger ms-2 cancel-invite-btn"
-                            data-id="<?= $note['id'] ?>">Cancel</button>
-                        <?php elseif ($note['status'] === 'accepted'): ?>
-                          <span class="badge bg-success" style="padding: 10px;">Accepted</span>
-                        <?php else: ?>
-                          <span class="badge bg-danger" style="padding: 10px;">Rejected</span>
-                        <?php endif; ?>
-                      </div>
 
-                      <div class="small text-muted mt-1"><?= $note['created_at'] ?></div>
-                    </div>
-                  </li>
-                <?php endforeach; ?>
-              <?php else: ?>
-                <li class="dropdown-item text-center text-muted py-3">
-                  <em>No sent invitations</em>
+            <!-- Bell Icon Trigger -->
+            <button id="notificationBell" class="btn btn-link position-relative">
+              <i class="bi bi-bell fs-4 text-dark"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                <?= count($IncommingNotifications) + count($selfRequestNotification) ?>
+              </span>
+            </button>
+
+            <!-- Overlay -->
+            <div id="notificationOverlay" class="overlay"></div>
+
+            <!-- Notification Panel -->
+            <div id="notificationPanel" class="notification-panel">
+              <div class="panel-header d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">🔔 Notifications</h5>
+                <button id="closePanel" class="btn btn-sm btn-outline-light">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+
+              <!-- Tabs -->
+              <ul class="nav nav-tabs custom-tabs mt-3" id="notifTabs" role="tablist">
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#allTab">All</button>
                 </li>
-              <?php endif; ?>
-            </ul>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invitesTab">Invitations</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#updatesTab">Updates</button>
+                </li>
+              </ul>
+
+              <!-- Tab Content -->
+              <div class="tab-content mt-3">
+
+                <!-- All Tab -->
+                <div class="tab-pane fade show active" id="allTab">
+                  <?php if (!empty($IncommingNotifications) || !empty($selfRequestNotification)): ?>
+                    <?php foreach ($IncommingNotifications as $n): ?>
+                      <div class="notif-card invite">
+                        <div class="notif-title">
+                          <strong><?= htmlspecialchars($n['inviter_rjcode']) ?></strong> invited you
+                        </div>
+                        <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
+                        <div class="notif-actions">
+                          <?php if ($n['status'] === 'pending'): ?>
+                            <button class="btn btn-sm btn-success">Accept</button>
+                            <button class="btn btn-sm btn-outline-danger">Reject</button>
+                          <?php else: ?>
+                            <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
+                          <?php endif; ?>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                    <?php foreach ($selfRequestNotification as $note): ?>
+                      <div class="notif-card update">
+                        <div class="notif-title">To: <strong><?= htmlspecialchars($note['invitee_rjcode']) ?></strong></div>
+                        <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
+                        <div class="notif-actions">
+                          <?php if ($note['status'] === 'pending'): ?>
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                          <?php elseif ($note['status'] === 'accepted'): ?>
+                            <span class="badge bg-success">Accepted</span>
+                          <?php else: ?>
+                            <span class="badge bg-danger">Rejected</span>
+                          <?php endif; ?>
+                        </div>
+                        <div class="small text-muted"><?= $note['created_at'] ?></div>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <div class="text-center text-muted py-4">No notifications 📭</div>
+                  <?php endif; ?>
+                </div>
+
+                <!-- Invitations Tab -->
+                <div class="tab-pane fade" id="invitesTab">
+                  <?php if (!empty($IncommingNotifications)): ?>
+                    <?php foreach ($IncommingNotifications as $n): ?>
+                      <div class="notif-card invite">
+                        <div class="notif-title">
+                          <strong><?= htmlspecialchars($n['inviter_rjcode']) ?></strong> invited you
+                        </div>
+                        <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <div class="text-center text-muted py-4">No invitations 👀</div>
+                  <?php endif; ?>
+                </div>
+
+                <!-- Updates Tab -->
+                <div class="tab-pane fade" id="updatesTab">
+                  <?php if (!empty($selfRequestNotification)): ?>
+                    <?php foreach ($selfRequestNotification as $note): ?>
+                      <div class="notif-card update">
+                        <div class="notif-title">Invite to <strong><?= htmlspecialchars($note['invitee_rjcode']) ?></strong>
+                        </div>
+                        <div class="notif-body">Status: <span class="badge bg-info"><?= ucfirst($note['status']) ?></span>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <div class="text-center text-muted py-4">No updates 💤</div>
+                  <?php endif; ?>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   </nav>
+  <!-- Mobile Bottom Navigation -->
+  <!-- Mobile Bottom Nav -->
   <div class="mobile-bottom-nav d-md-none" style="background:#0074ff">
     <div class="nav-container">
       <a href="#" class="nav-item"><i class="fa fa-home"></i></a>
@@ -881,101 +1220,212 @@ if ($currentUser) {
       <a href="#" class="nav-item">
         <button class="btn btn-light" id="newEventBtnMb">+ New Event</button>
       </a>
-      <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#mobileNotificationModal">
-        <i class="fa fa-bell"></i>
-        <sup class="badge bg-danger rounded-pill ms-1">
-          <?php echo count($IncommingNotifications) + count($selfRequestNotification) ?>
-        </sup>
+      <a href="#" class="nav-item">
+        <div class="dropdown">
+          <!-- Bell Icon -->
+          <button id="notificationBellMb" class="btn btn-link position-relative">
+            <i class="bi bi-bell fs-4 text-dark"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <?= count($IncommingNotifications) + count($selfRequestNotification) ?>
+            </span>
+          </button>
+        </div>
       </a>
       <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#profileModal">
         <i class="fa fa-user"></i>
       </a>
     </div>
   </div>
-  <div class="modal fade" id="mobileNotificationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-bottom">
-      <div class="modal-content bg-white text-dark">
-        <div class="modal-header">
-          <h6 class="modal-title">Notifications</h6>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body p-0" style="max-height:400px;overflow-y:auto;">
-          <div class="px-3 py-2 text-muted small fw-bold border-bottom bg-light">
-            Incoming Invitations
-          </div>
-          <?php if (!empty($IncommingNotifications)): ?>
+
+  <!-- Overlay -->
+  <div id="notifOverlayMb" class="notif-overlay"></div>
+
+  <!-- Notification Bottom Sheet -->
+  <div id="notifSheetMb" class="notif-sheet">
+    <div class="sheet-header d-flex justify-content-between align-items-center">
+      <div class="drag-handle"></div>
+
+      <button id="closeSheetMb" class="btn btn-sm btn-outline-light">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="sheet-content">
+
+      <ul class="nav nav-tabs custom-tabs mt-3" id="notifTabsMb">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#allTabMb">All</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invitesTabMb">Invitations</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#updatesTabMb">Updates</button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content mt-3 px-2">
+        <!-- All -->
+        <div class="tab-pane fade show active" id="allTabMb">
+          <?php if (!empty($IncommingNotifications) || !empty($selfRequestNotification)): ?>
             <?php foreach ($IncommingNotifications as $n): ?>
-              <li class="dropdown-item d-flex flex-column align-items-start">
-                <div class="w-100 p-2 rounded bg-light mb-2 shadow-sm">
-                  <div class="fw-semibold text-primary">
-                    <?= htmlspecialchars($n['inviter_rjcode']) ?>
-                    <span class="text-muted small">invited you</span>
-                  </div>
-                  <div class="small text-dark mb-1">
-                    Event: <em><?= htmlspecialchars($n['title']) ?></em>
-                  </div>
+              <div class="notif-card invite">
+                <div class="notif-title">
+                  <strong><?= htmlspecialchars($n['inviter_rjcode']) ?></strong> invited you
+                </div>
+                <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
+                <div class="notif-actions">
                   <?php if ($n['status'] === 'pending'): ?>
-                    <div class="d-flex gap-2">
-                      <button class="btn btn-sm btn-success flex-fill invite-action-btn" data-id="<?= $n['id'] ?>"
-                        data-action="accept">Accept</button>
-                      <button class="btn btn-sm btn-outline-danger flex-fill invite-action-btn" data-id="<?= $n['id'] ?>"
-                        data-action="reject">Reject</button>
-                    </div>
+                    <button class="btn btn-sm btn-success">Accept</button>
+                    <button class="btn btn-sm btn-outline-danger">Reject</button>
                   <?php else: ?>
                     <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                   <?php endif; ?>
                 </div>
-              </li>
+              </div>
             <?php endforeach; ?>
-          <?php else: ?>
-            <div class="text-center text-muted py-3">
-              <em>No incoming invitations</em>
-            </div>
-          <?php endif; ?>
-          <div class="px-3 py-2 text-muted small fw-bold border-top border-bottom bg-light">
-            My Sent Invites
-          </div>
-          <?php if (!empty($selfRequestNotification)): ?>
             <?php foreach ($selfRequestNotification as $note): ?>
-              <div class="p-3 border-bottom">
-                <div class="fw-semibold">
-                  To: <span class="text-primary"><?= htmlspecialchars($note['invitee_rjcode']) ?></span>
-                </div>
-                <div class="small text-dark mb-2">
-                  Event: <em><?= htmlspecialchars($note['event_title']) ?></em>
-                </div>
-
-                <div class="d-flex align-items-center flex-wrap gap-2">
-                  <span>
-                    Status:
-                    <?php if ($note['status'] === 'pending'): ?>
-                      <span class="badge bg-warning text-dark" style="padding:10px">Pending</span>
-                    <?php elseif ($note['status'] === 'accepted'): ?>
-                      <span class="badge bg-success" style="padding:10px">Accepted</span>
-                    <?php else: ?>
-                      <span class="badge bg-danger" style="padding:10px">Rejected</span>
-                    <?php endif; ?>
-                  </span>
-
+              <div class="notif-card update">
+                <div class="notif-title">To: <strong><?= htmlspecialchars($note['invitee_rjcode']) ?></strong></div>
+                <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
+                <div class="notif-actions">
                   <?php if ($note['status'] === 'pending'): ?>
-                    <button class="btn btn-sm btn-outline-danger ms-2 cancel-invite-btn"
-                      data-id="<?= $note['id'] ?>">Cancel</button>
+                    <span class="badge bg-warning text-dark">Pending</span>
+                    <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                  <?php elseif ($note['status'] === 'accepted'): ?>
+                    <span class="badge bg-success">Accepted</span>
+                  <?php else: ?>
+                    <span class="badge bg-danger">Rejected</span>
                   <?php endif; ?>
                 </div>
-
-                <div class="small text-muted mt-1"><?= $note['created_at'] ?></div>
               </div>
             <?php endforeach; ?>
           <?php else: ?>
-            <div class="text-center text-muted py-3">
-              <em>No sent invitations</em>
-            </div>
+            <div class="text-center text-muted py-4">No notifications 📭</div>
           <?php endif; ?>
+        </div>
 
+        <!-- Invitations -->
+        <div class="tab-pane fade" id="invitesTabMb">
+          <?php if (!empty($IncommingNotifications)): ?>
+            <?php foreach ($IncommingNotifications as $n): ?>
+              <div class="notif-card invite">
+                <div class="notif-title"><strong><?= htmlspecialchars($n['inviter_rjcode']) ?></strong> invited you</div>
+                <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="text-center text-muted py-4">No invitations 👀</div>
+          <?php endif; ?>
+        </div>
+
+        <!-- Updates -->
+        <div class="tab-pane fade" id="updatesTabMb">
+          <?php if (!empty($selfRequestNotification)): ?>
+            <?php foreach ($selfRequestNotification as $note): ?>
+              <div class="notif-card update">
+                <div class="notif-title">Invite to <strong><?= htmlspecialchars($note['invitee_rjcode']) ?></strong></div>
+                <div class="notif-body">Status: <span class="badge bg-info"><?= ucfirst($note['status']) ?></span></div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="text-center text-muted py-4">No updates 💤</div>
+          <?php endif; ?>
         </div>
       </div>
     </div>
   </div>
+
+
+  <!-- 📱 Bottom Sheet Notification Panel -->
+  <div id="notificationPanelMb" class="notification-panel mobile">
+
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs custom-tabs mt-3" id="notifTabsMb">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#allTabMb">All</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invitesTabMb">Invitations</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#updatesTabMb">Updates</button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-3 px-2">
+      <!-- All -->
+      <div class="tab-pane fade show active" id="allTabMb">
+        <?php if (!empty($IncommingNotifications) || !empty($selfRequestNotification)): ?>
+          <?php foreach ($IncommingNotifications as $n): ?>
+            <div class="notif-card invite">
+              <div class="notif-title">
+                <strong><?= htmlspecialchars($n['inviter_rjcode']) ?></strong> invited you
+              </div>
+              <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
+              <div class="notif-actions">
+                <?php if ($n['status'] === 'pending'): ?>
+                  <button class="btn btn-sm btn-success">Accept</button>
+                  <button class="btn btn-sm btn-outline-danger">Reject</button>
+                <?php else: ?>
+                  <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
+          <?php foreach ($selfRequestNotification as $note): ?>
+            <div class="notif-card update">
+              <div class="notif-title">To: <strong><?= htmlspecialchars($note['invitee_rjcode']) ?></strong></div>
+              <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
+              <div class="notif-actions">
+                <?php if ($note['status'] === 'pending'): ?>
+                  <span class="badge bg-warning text-dark">Pending</span>
+                  <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                <?php elseif ($note['status'] === 'accepted'): ?>
+                  <span class="badge bg-success">Accepted</span>
+                <?php else: ?>
+                  <span class="badge bg-danger">Rejected</span>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="text-center text-muted py-4">No notifications 📭</div>
+        <?php endif; ?>
+      </div>
+
+      <!-- Invitations -->
+      <div class="tab-pane fade" id="invitesTabMb">
+        <?php if (!empty($IncommingNotifications)): ?>
+          <?php foreach ($IncommingNotifications as $n): ?>
+            <div class="notif-card invite">
+              <div class="notif-title"><strong><?= htmlspecialchars($n['inviter_rjcode']) ?></strong> invited you</div>
+              <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="text-center text-muted py-4">No invitations 👀</div>
+        <?php endif; ?>
+      </div>
+
+      <!-- Updates -->
+      <div class="tab-pane fade" id="updatesTabMb">
+        <?php if (!empty($selfRequestNotification)): ?>
+          <?php foreach ($selfRequestNotification as $note): ?>
+            <div class="notif-card update">
+              <div class="notif-title">Invite to <strong><?= htmlspecialchars($note['invitee_rjcode']) ?></strong></div>
+              <div class="notif-body">Status: <span class="badge bg-info"><?= ucfirst($note['status']) ?></span></div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="text-center text-muted py-4">No updates 💤</div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+
   <!-- ✅ Mobile Search Modal -->
   <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
@@ -1184,7 +1634,59 @@ if ($currentUser) {
     </div>
   </div>
   <!-- Toast container -->
-  <div id="toastContainer"></div>
+  <div class="notification-container" id="notification-container"></div>
+  <script>
+    const bell = document.getElementById("notificationBell");
+    const panel = document.getElementById("notificationPanel");
+    const overlay = document.getElementById("notificationOverlay");
+    const closeBtn = document.getElementById("closePanel");
+
+    bell.addEventListener("click", () => {
+      panel.classList.add("active");
+      overlay.style.display = "block";
+    });
+
+    closeBtn.addEventListener("click", () => {
+      panel.classList.remove("active");
+      overlay.style.display = "none";
+    });
+
+    overlay.addEventListener("click", () => {
+      panel.classList.remove("active");
+      overlay.style.display = "none";
+    });
+
+    const notifBtnMb = document.getElementById("notificationBellMb");
+    const notifSheetMb = document.getElementById("notifSheetMb");
+    const notifOverlayMb = document.getElementById("notifOverlayMb");
+    const closeBtnMb = document.getElementById("closeSheetMb");
+
+    function openSheet() {
+      notifSheetMb.classList.add("active");
+      notifOverlayMb.classList.add("active");
+    }
+    function closeSheet() {
+      notifSheetMb.classList.remove("active");
+      notifOverlayMb.classList.remove("active");
+    }
+
+    notifBtnMb.addEventListener("click", openSheet);
+    closeBtnMb.addEventListener("click", closeSheet);
+    notifOverlayMb.addEventListener("click", closeSheet);
+
+    /* Swipe down gesture */
+    let startY = 0;
+    notifSheetMb.addEventListener("touchstart", (e) => {
+      startY = e.touches[0].clientY;
+    });
+    notifSheetMb.addEventListener("touchmove", (e) => {
+      let currentY = e.touches[0].clientY;
+      if (currentY - startY > 100) { // swipe down threshold
+        closeSheet();
+      }
+    });
+
+  </script>
   <script>
     const currentUser = "<?php echo $_SESSION['user_rjcode']; ?>";
   </script>
@@ -1869,9 +2371,9 @@ if ($currentUser) {
           reminder: parseInt(document.getElementById("reminder").value)
         };
         axios.post('save_event.php', formData)
-          .then(() => {
+          .then((success) => {
             calendar.refetchEvents();
-            showToast('Event saved successfully!', 'success');
+            showToast(success.data.message, 'success');
             bootstrap.Offcanvas.getInstance(document.getElementById('eventOffcanvas')).hide();
           })
           .catch(() => showToast('Could not save event', 'error'));
@@ -2021,18 +2523,26 @@ if ($currentUser) {
       });
 
 
-      function showToast(message, type = "info", duration = 7000) {
-        const container = document.getElementById("toastContainer");
-        const toast = document.createElement("div");
-        toast.className = `toast ${type}`;
-        toast.textContent = message;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add("show"), 100);
-        setTimeout(() => {
-          toast.classList.remove("show");
-          setTimeout(() => toast.remove(), 500);
-        }, duration);
+      function showToast(message, type, duration = 5000) {
+        const container = document.getElementById("notification-container");
+        const icons = {
+          success: "✅",
+          error: "❌",
+          info: "ℹ️"
+        };
+        const notif = document.createElement("div");
+        notif.classList.add("notification", type);
+        notif.innerHTML = `
+        <span  alt="${type} icon">${icons[type]}</span>
+        <span>${message}</span>
+        <span class="close-btn">&times;</span>
+        <div class="progress" style="animation-duration:${duration}ms"></div>
+      `;
+        notif.querySelector(".close-btn").onclick = () => notif.remove();
+        container.appendChild(notif);
+        setTimeout(() => notif.remove(), duration);
       }
+
     });
   </script>
   <script src="./js/flatpickr.js"></script>
