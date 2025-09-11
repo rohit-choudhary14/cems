@@ -1,26 +1,13 @@
 <?php
 session_start();
 include 'db.php';
-
-// Make sure user is logged in
 if (!isset($_SESSION['user_rjcode'])) {
   echo json_encode([]);
   exit;
 }
 
 $user_rjcode = $_SESSION['user_rjcode'];
-
-// Get current user id from rjcode
-$stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
-$stmt->execute([$user_rjcode]);
-$currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$currentUser) {
-  echo json_encode([]);
-  exit;
-}
-
-$user_id = $currentUser['rjcode'];
+$user_id = $user_rjcode;
 $query ="
   SELECT 
     e.id, 

@@ -5,37 +5,30 @@ if (!isset($_SESSION['user_rjcode'])) {
   header("Location: index.php");
   exit;
 }
-
 $user_rjcode = $_SESSION['user_rjcode'];
-$stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
-$stmt->execute([$user_rjcode]);
-$currentUser = $stmt->fetch();
-
 $IncommingNotifications = [];
 $selfRequestNotification = [];
-if ($currentUser) {
-  $stmt = $pdo->prepare("
-        SELECT ei.id, e.title, u.rjcode AS inviter_rjcode, ei.status
-        FROM event_invitations ei
-        JOIN events e ON ei.event_id = e.id
-        JOIN users u ON ei.inviter_rjcode = u.rjcode
-        WHERE ei.invitee_rjcode = ?
-          AND ei.status = 'pending'
-        ORDER BY ei.created_at DESC
-    ");
-  $stmt->execute([$currentUser['rjcode']]);
-  $IncommingNotifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  // Invitations sent by the logged-in user (only pending)
-  $stmt = $pdo->prepare("
-    SELECT ei.id, e.title AS event_title, u.rjcode AS invitee_rjcode, ei.status, ei.created_at
+if ($user_rjcode) {
+  $stmt = $stmt = $pdo->prepare("
+    SELECT ei.id, e.title, ei.inviter_rjcode, ei.status
     FROM event_invitations ei
     JOIN events e ON ei.event_id = e.id
-    JOIN users u ON ei.invitee_rjcode = u.rjcode
+    WHERE ei.invitee_rjcode = ?
+      AND ei.status = 'pending'
+    ORDER BY ei.created_at DESC
+");
+  $stmt->execute([$user_rjcode]);
+  $IncommingNotifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt->execute([$user_rjcode]);
+  $IncommingNotifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("
+    SELECT ei.id, e.title AS event_title, ei.invitee_rjcode, ei.status, ei.created_at
+    FROM event_invitations ei
+    JOIN events e ON ei.event_id = e.id
     WHERE ei.inviter_rjcode = :userId
       AND ei.status = 'pending'
     ORDER BY ei.created_at DESC
-  ");
-
+");
   $stmt->execute(["userId" => $user_rjcode]);
   $selfRequestNotification = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -211,6 +204,13 @@ if ($currentUser) {
 
     #calendar .fc-dayGridMonth-view .fc-daygrid-day-events {
       min-height: 0 !important;
+    }
+
+    #calendar .fc-header-toolbar .fc-toolbar-chunk:nth-child(2)>div {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
     }
 
     @media (max-width: 768px) {
@@ -1058,40 +1058,39 @@ if ($currentUser) {
       padding: 10px;
     }
 
- .nav-tabs .nav-link {
-  color: #6c757d; /* default text color (gray) */
-  font-weight: 600; /* fw-semibold */
-  transition: box-shadow 0.3s ease;
-}
+    .nav-tabs .nav-link {
+      color: #6c757d;
+      font-weight: 600;
+      transition: box-shadow 0.3s ease;
+    }
 
-.nav-tabs .nav-link.text-warning.active {
-  color: #856404 !important; /* darken warning (yellow) for active */
-  border-bottom: 3px solid #ffc107 !important; /* yellow underline */
-  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3); /* yellow glow */
-  border-radius: 0.25rem 0.25rem 0 0;
-}
+    .nav-tabs .nav-link.text-warning.active {
+      color: #856404 !important;
+      border-bottom: 3px solid #ffc107 !important;
+      box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+      border-radius: 0.25rem 0.25rem 0 0;
+    }
 
-.nav-tabs .nav-link.text-success.active {
-  color: #155724 !important; /* dark green */
-  border-bottom: 3px solid #28a745 !important; /* green underline */
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); /* green glow */
-  border-radius: 0.25rem 0.25rem 0 0;
-}
+    .nav-tabs .nav-link.text-success.active {
+      color: #155724 !important;
+      border-bottom: 3px solid #28a745 !important;
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+      border-radius: 0.25rem 0.25rem 0 0;
+    }
 
-.nav-tabs .nav-link.text-danger.active {
-  color: #721c24 !important; /* dark red */
-  border-bottom: 3px solid #dc3545 !important; /* red underline */
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); /* red glow */
-  border-radius: 0.25rem 0.25rem 0 0;
-}
+    .nav-tabs .nav-link.text-danger.active {
+      color: #721c24 !important;
+      border-bottom: 3px solid #dc3545 !important;
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+      border-radius: 0.25rem 0.25rem 0 0;
+    }
 
-.nav-tabs .nav-link.text-secondary.active {
-  color: #383d41 !important; /* darker gray */
-  border-bottom: 3px solid #6c757d !important; /* gray underline */
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3); /* gray glow */
-  border-radius: 0.25rem 0.25rem 0 0;
-}
-
+    .nav-tabs .nav-link.text-secondary.active {
+      color: #383d41 !important;
+      border-bottom: 3px solid #6c757d !important;
+      box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+      border-radius: 0.25rem 0.25rem 0 0;
+    }
   </style>
 
 </head>
@@ -1120,6 +1119,9 @@ if ($currentUser) {
                 <hr class="dropdown-divider">
               </li>
               <li style="padding: 2px;">
+                 <p class="btn btn-warning w-100">
+            <a href="http://10.130.8.68/intrahc/"><i class="fa fa-arrow"></i> Back to sso</a>
+          </p>
                 <a href="logout.php" class="btn btn-danger w-100">Logout</a>
               </li>
             </ul>
@@ -1517,7 +1519,14 @@ if ($currentUser) {
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <p><i class="fa fa-user-circle"></i> <?= htmlspecialchars($_SESSION['user_rjcode']) ?></p>
+          <p>
+            <i class="fa fa-user-circle"></i>
+            <?= htmlspecialchars($_SESSION['user_rjcode']) ?>
+          </p>
+          <hr>
+          <p class="btn btn-warning w-100">
+            <a href="http://10.130.8.68/intrahc/"><i class="fa fa-arrow"></i> Back to sso</a>
+          </p>
           <hr>
           <a href="logout.php" class="btn btn-danger w-100">Logout</a>
         </div>
@@ -1535,35 +1544,35 @@ if ($currentUser) {
       <div class="col-md-8">
         <ul class="nav nav-tabs" style="margin-top:85px;">
           <li class="nav-item col-6 col-md-3">
-            <a class="nav-link text-warning fw-semibold" id="todayTab" data-bs-toggle="tab" href="#today" role="tab" aria-controls="today" aria-selected="true">
+            <a class="nav-link text-warning fw-semibold" id="todayBtn" data-bs-toggle="tab" href="#today" role="tab" aria-controls="today" aria-selected="true">
               📅 Today
             </a>
           </li>
           <li class="nav-item col-6 col-md-3">
-            <a class="nav-link text-success fw-semibold" id="upcomingTab" data-bs-toggle="tab" href="#upcoming" role="tab" aria-controls="upcoming" aria-selected="false">
+            <a class="nav-link text-success fw-semibold" id="upcomingBtn" data-bs-toggle="tab" href="#upcoming" role="tab" aria-controls="upcoming" aria-selected="false">
               ⏩ Upcoming
             </a>
           </li>
           <li class="nav-item col-6 col-md-3">
-            <a class="nav-link text-danger fw-semibold" id="previousTab" data-bs-toggle="tab" href="#previous" role="tab" aria-controls="previous" aria-selected="false">
+            <a class="nav-link text-danger fw-semibold" id="previousBtn" data-bs-toggle="tab" href="#previous" role="tab" aria-controls="previous" aria-selected="false">
               ⏪ Previous
             </a>
           </li>
           <li class="nav-item col-6 col-md-3">
-            <a class="nav-link text-secondary fw-semibold" id="allTab" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="false">
+            <a class="nav-link text-secondary fw-semibold" id="allBtn" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="false">
               📋 All Events
             </a>
           </li>
         </ul>
 
         <div class="tab-content mt-3">
-          <div class="tab-pane fade show active" id="todayBtn" role="tabpanel" aria-labelledby="todayTab">
+          <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="todayBtn">
           </div>
-          <div class="tab-pane fade" id="upcomingBtn" role="tabpanel" aria-labelledby="upcomingTab">
+          <div class="tab-pane fade" role="tabpanel" aria-labelledby="upcomingBtn">
           </div>
-          <div class="tab-pane fade" id="previousBtn" role="tabpanel" aria-labelledby="previousTab">
+          <div class="tab-pane fade" role="tabpanel" aria-labelledby="previousBtn">
           </div>
-          <div class="tab-pane fade" id="allBtn" role="tabpanel" aria-labelledby="allTab">
+          <div class="tab-pane fade" role="tabpanel" aria-labelledby="allBtn">
           </div>
         </div>
 
@@ -1929,8 +1938,8 @@ if ($currentUser) {
           info.el._tooltip = tooltip;
         },
         headerToolbar: {
-          left: 'today prev,next',
-          center: 'title',
+          left: 'today',
+          center: 'prev,title,next',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listYear'
         },
         views: {
@@ -2631,26 +2640,6 @@ if ($currentUser) {
     });
   </script>
   <script src="./js/flatpickr.js"></script>
-
-  <script>
-    // ✅ Swipe down to close (mobile-like behavior)
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-      let startY = 0;
-      modal.addEventListener('touchstart', e => {
-        startY = e.touches[0].clientY;
-      });
-      modal.addEventListener('touchmove', e => {
-        let endY = e.touches[0].clientY;
-        if (endY - startY > 100) { // swipe down
-          const bsModal = bootstrap.Modal.getInstance(modal);
-          bsModal.hide();
-        }
-      });
-    });
-  </script>
-
-
 </body>
 
 </html>

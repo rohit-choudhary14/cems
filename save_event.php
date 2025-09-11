@@ -7,16 +7,6 @@ if (!isset($_SESSION['user_rjcode'])) {
     echo json_encode(["status" => "error", "message" => "Not authenticated"]);
     exit;
 }
-
-$stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
-$stmt->execute([$_SESSION['user_rjcode']]);
-$creator = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$creator) {
-    echo json_encode(["status" => "error", "message" => "User not found"]);
-    exit;
-}
-
 try {
     $input = json_decode(file_get_contents("php://input"), true);
     if (!$input) {
@@ -25,10 +15,8 @@ try {
 
     if (!empty($input['invite_rjcode'])) {
         if (is_array($input['invite_rjcode'])) {
-            // Multiple invites → store as comma-separated string
             $invite_rjcode = implode(",", array_map('trim', $input['invite_rjcode']));
         } else {
-            // Single invite
             $invite_rjcode = trim($input['invite_rjcode']);
         }
     } else {
@@ -59,8 +47,8 @@ try {
             ':end_date' => $input['end'],
             ':description' => $input['description'] ?? null,
             ':priority' => $input['priority'] ?? 'low',
-            ':user_id' => $creator['rjcode'],
-            ':created_by' => $creator['rjcode'],
+            ':user_id' => $_SESSION['user_rjcode'],
+            ':created_by' => $_SESSION['user_rjcode'],
             ':reminder_before' => $reminder_before,
             ':is_repeating' => $is_repeating,
             ':repeat_frequency' => $repeat_frequency
@@ -72,33 +60,18 @@ try {
 
             foreach ($invitees as $code) {
                 $code = trim($code);
-                if (empty($code) || $code === $creator['rjcode']) {
+                if (empty($code) || $code === $_SESSION['user_rjcode']) {
                     continue;
                 }
-
-                // Check if user exists
-                $stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
-                $stmt->execute([$code]);
-                $invitee = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($invitee) {
-                    // ✅ Check if already invited
-                    $checkStmt = $pdo->prepare("SELECT id FROM event_invitations WHERE event_id = ? AND invitee_rjcode = ?");
-                    $checkStmt->execute([$eventId, $invitee['rjcode']]);
-                    $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-                    if (!$existing) {
-                        // Insert only if not already invited
-                        $stmt = $pdo->prepare("
+                $checkStmt = $pdo->prepare("SELECT id FROM event_invitations WHERE event_id = ? AND invitee_rjcode = ?");
+                $checkStmt->execute([$eventId, $code]);
+                $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                if (!$existing) {
+                    $stmt = $pdo->prepare("
                     INSERT INTO event_invitations (event_id, inviter_rjcode, invitee_rjcode, status) 
                     VALUES (?, ?, ?, 'pending')
                 ");
-                        $stmt->execute([$eventId, $creator['rjcode'], $invitee['rjcode']]);
-                    } else {
-                        // Optional: update status if needed
-                        // $stmt = $pdo->prepare("UPDATE event_invitations SET status = 'pending' WHERE id = ?");
-                        // $stmt->execute([$existing['id']]);
-                    }
+                    $stmt->execute([$eventId, $creator['rjcode'], $code]);
                 }
             }
         }
@@ -109,14 +82,13 @@ try {
             "eventId" => $eventId
         ]);
         exit;
-
     } else {
         $eventId = $input['id'];
         $stmt = $pdo->prepare("SELECT user_id FROM events WHERE id = ?");
         $stmt->execute([$eventId]);
         $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$event || $event['user_id'] != $creator['rjcode']) {
+        if (!$event || $event['user_id'] != $_SESSION['user_rjcode']) {
             throw new Exception("You don't have permission to update this event.");
         }
 
@@ -141,49 +113,29 @@ try {
         ]);
         if (!empty($invite_rjcode)) {
             $invitees = is_array($invite_rjcode) ? $invite_rjcode : explode(',', $invite_rjcode);
-
             foreach ($invitees as $code) {
                 $code = trim($code);
-                if (empty($code) || $code === $creator['rjcode']) {
+                if (empty($code) || $code ===  $_SESSION['user_rjcode']) {
                     continue;
                 }
-
-                // Check if user exists
-                $stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
-                $stmt->execute([$code]);
-                $invitee = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($invitee) {
-                    // ✅ Check if already invited
-                    $checkStmt = $pdo->prepare("SELECT id FROM event_invitations WHERE event_id = ? AND invitee_rjcode = ?");
-                    $checkStmt->execute([$eventId, $invitee['rjcode']]);
-                    $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-                    if (!$existing) {
-                        // Insert only if not already invited
-                        $stmt = $pdo->prepare("
+                $checkStmt = $pdo->prepare("SELECT id FROM event_invitations WHERE event_id = ? AND invitee_rjcode = ?");
+                $checkStmt->execute([$eventId, $code]);
+                $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                if (!$existing) {
+                    $stmt = $pdo->prepare("
                     INSERT INTO event_invitations (event_id, inviter_rjcode, invitee_rjcode, status) 
                     VALUES (?, ?, ?, 'pending')
                 ");
-                        $stmt->execute([$eventId, $creator['rjcode'], $invitee['rjcode']]);
-                    } else {
-                        // Optional: update status if needed
-                        // $stmt = $pdo->prepare("UPDATE event_invitations SET status = 'pending' WHERE id = ?");
-                        // $stmt->execute([$existing['id']]);
-                    }
+                    $stmt->execute([$eventId, $creator['rjcode'], $code]);
                 }
             }
         }
-
-
-
         echo json_encode([
             "status" => "success",
             "message" => "Event updated successfully",
             "eventId" => $eventId
         ]);
     }
-
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
