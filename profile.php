@@ -38,7 +38,6 @@ if ($currentUser) {
 
   $stmt->execute(["userId" => $user_rjcode]);
   $selfRequestNotification = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 }
 ?>
 <!DOCTYPE html>
@@ -76,7 +75,7 @@ if ($currentUser) {
       top: 0;
       width: 100%;
       z-index: 1000;
-      background: #0067b8;
+      background: #022f66;
     }
 
     .sidebar {
@@ -584,7 +583,6 @@ if ($currentUser) {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Floating curved bottom nav */
     .mobile-bottom-nav {
       position: fixed;
       bottom: 15px;
@@ -618,8 +616,8 @@ if ($currentUser) {
 
     .mobile-bottom-nav sup.badge {
       position: absolute;
-      top: -6px;
-      right: -10px;
+      /* top: -6px; */
+      /* right: -10px; */
       font-size: 12px;
     }
 
@@ -823,7 +821,6 @@ if ($currentUser) {
     }
   </style>
   <style>
-    /* Overlay */
     .overlay {
       display: none;
       position: fixed;
@@ -898,9 +895,11 @@ if ($currentUser) {
       display: flex;
       gap: 8px;
     }
-    .notification-panel.mobile{
+
+    .notification-panel.mobile {
       display: none;
     }
+
     @media (max-width: 768px) {
       .notification-panel {
         width: 100%;
@@ -977,7 +976,7 @@ if ($currentUser) {
 
     .panel-header {
       padding: 12px 16px;
-      background: #0074ff;
+      background: #022f66;
       color: #fff;
       border-radius: 16px 16px 0 0;
     }
@@ -1058,13 +1057,48 @@ if ($currentUser) {
       flex-grow: 1;
       padding: 10px;
     }
+
+ .nav-tabs .nav-link {
+  color: #6c757d; /* default text color (gray) */
+  font-weight: 600; /* fw-semibold */
+  transition: box-shadow 0.3s ease;
+}
+
+.nav-tabs .nav-link.text-warning.active {
+  color: #856404 !important; /* darken warning (yellow) for active */
+  border-bottom: 3px solid #ffc107 !important; /* yellow underline */
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3); /* yellow glow */
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.nav-tabs .nav-link.text-success.active {
+  color: #155724 !important; /* dark green */
+  border-bottom: 3px solid #28a745 !important; /* green underline */
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); /* green glow */
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.nav-tabs .nav-link.text-danger.active {
+  color: #721c24 !important; /* dark red */
+  border-bottom: 3px solid #dc3545 !important; /* red underline */
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); /* red glow */
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.nav-tabs .nav-link.text-secondary.active {
+  color: #383d41 !important; /* darker gray */
+  border-bottom: 3px solid #6c757d !important; /* gray underline */
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3); /* gray glow */
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
   </style>
 
 </head>
 
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-dark d-lg-flex" style="background:#0074ff">
+  <nav class="navbar navbar-expand-lg navbar-dark d-lg-flex" style="background:#022f66">
     <div class="container-fluid">
       <a class="navbar-brand" href="#" style="color:white">Rajasthan High Court CEMS</a>
       <div class="collapse navbar-collapse" id="navbarContent">
@@ -1080,7 +1114,7 @@ if ($currentUser) {
             </a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-light" aria-labelledby="userDropdown">
               <li><a class="dropdown-item" href="#">
-                  <?= htmlspecialchars($_SESSION['user_rjcode']) ?>
+                  <?= htmlspecialchars($_SESSION['user_rjcode'] . '(' . $_SESSION['user_name'] . ')') ?>
                 </a></li>
               <li>
                 <hr class="dropdown-divider">
@@ -1091,21 +1125,15 @@ if ($currentUser) {
             </ul>
           </div>
           <div class="dropdown">
-
-            <!-- Bell Icon Trigger -->
             <button id="notificationBell" class="btn btn-link position-relative">
-              <i class="bi bi-bell fs-4 text-dark"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <i class="bi bi-bell fs-4 text-white"></i>
+              <sup class="position-absolute start-100 translate-middle badge rounded-pill bg-danger" style="top:15px">
                 <?= count($IncommingNotifications) + count($selfRequestNotification) ?>
-              </span>
+              </sup>
             </button>
-
-            <!-- Overlay -->
             <div id="notificationOverlay" class="overlay"></div>
-
-            <!-- Notification Panel -->
             <div id="notificationPanel" class="notification-panel">
-              <div class="panel-header d-flex justify-content-between align-items-center">
+              <div class="panel-header d-none justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">🔔 Notifications</h5>
                 <button id="closePanel" class="btn btn-sm btn-outline-light">
                   <i class="bi bi-x-lg"></i>
@@ -1211,7 +1239,7 @@ if ($currentUser) {
   </nav>
   <!-- Mobile Bottom Navigation -->
   <!-- Mobile Bottom Nav -->
-  <div class="mobile-bottom-nav d-md-none" style="background:#0074ff">
+  <div class="mobile-bottom-nav d-md-none" style="background:#022f66">
     <div class="nav-container">
       <a href="#" class="nav-item"><i class="fa fa-home"></i></a>
       <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#searchModal">
@@ -1224,10 +1252,10 @@ if ($currentUser) {
         <div class="dropdown">
           <!-- Bell Icon -->
           <button id="notificationBellMb" class="btn btn-link position-relative">
-            <i class="bi bi-bell fs-4 text-dark"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <i class="bi bi-bell fs-4 text-white"></i>
+            <sup class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="margin-top:15px">
               <?= count($IncommingNotifications) + count($selfRequestNotification) ?>
-            </span>
+            </sup>
           </button>
         </div>
       </a>
@@ -1425,12 +1453,10 @@ if ($currentUser) {
       </div>
     </div>
   </div>
-
-  <!-- ✅ Mobile Search Modal -->
   <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
       <div class="modal-content shadow border-0 rounded-4 overflow-hidden">
-        <div class="modal-header bg-primary text-white py-3">
+        <div class="modal-header text-white py-3" style="background-color:#022f66">
           <h5 class="modal-title fw-semibold" id="searchModalLabel">
             <i class="bi bi-search me-2"></i> Search Events
           </h5>
@@ -1507,20 +1533,40 @@ if ($currentUser) {
       </div>
       <!-- Main Calendar -->
       <div class="col-md-8">
-        <div class="row g-2" style="margin-top:85px">
-          <div class="col-6 col-md-3">
-            <button class="btn btn-primary btn-sm w-100" id="todayBtn">📅 Today</button>
+        <ul class="nav nav-tabs" style="margin-top:85px;">
+          <li class="nav-item col-6 col-md-3">
+            <a class="nav-link text-warning fw-semibold" id="todayTab" data-bs-toggle="tab" href="#today" role="tab" aria-controls="today" aria-selected="true">
+              📅 Today
+            </a>
+          </li>
+          <li class="nav-item col-6 col-md-3">
+            <a class="nav-link text-success fw-semibold" id="upcomingTab" data-bs-toggle="tab" href="#upcoming" role="tab" aria-controls="upcoming" aria-selected="false">
+              ⏩ Upcoming
+            </a>
+          </li>
+          <li class="nav-item col-6 col-md-3">
+            <a class="nav-link text-danger fw-semibold" id="previousTab" data-bs-toggle="tab" href="#previous" role="tab" aria-controls="previous" aria-selected="false">
+              ⏪ Previous
+            </a>
+          </li>
+          <li class="nav-item col-6 col-md-3">
+            <a class="nav-link text-secondary fw-semibold" id="allTab" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="false">
+              📋 All Events
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content mt-3">
+          <div class="tab-pane fade show active" id="todayBtn" role="tabpanel" aria-labelledby="todayTab">
           </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-success btn-sm w-100" id="upcomingBtn">⏩ Upcoming</button>
+          <div class="tab-pane fade" id="upcomingBtn" role="tabpanel" aria-labelledby="upcomingTab">
           </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-danger btn-sm w-100" id="previousBtn">⏪ Previous</button>
+          <div class="tab-pane fade" id="previousBtn" role="tabpanel" aria-labelledby="previousTab">
           </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-secondary btn-sm w-100" id="allBtn">📋 All Events</button>
+          <div class="tab-pane fade" id="allBtn" role="tabpanel" aria-labelledby="allTab">
           </div>
         </div>
+
         <div id="calendar"></div>
       </div>
     </div>
@@ -1665,6 +1711,7 @@ if ($currentUser) {
       notifSheetMb.classList.add("active");
       notifOverlayMb.classList.add("active");
     }
+
     function closeSheet() {
       notifSheetMb.classList.remove("active");
       notifOverlayMb.classList.remove("active");
@@ -1685,14 +1732,14 @@ if ($currentUser) {
         closeSheet();
       }
     });
-
   </script>
   <script>
     const currentUser = "<?php echo $_SESSION['user_rjcode']; ?>";
   </script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       let currentEvent = null;
+
       function nthWeekdayOfMonth(year, month, weekday, n) {
         let date = new Date(year, month, 1);
         let count = 0;
@@ -1708,7 +1755,7 @@ if ($currentUser) {
         return null;
       }
 
-      document.getElementById("repeatEventCheck").addEventListener("change", function () {
+      document.getElementById("repeatEventCheck").addEventListener("change", function() {
         const repeatOptions = document.getElementById("repeatOptions");
         if (this.checked) {
           repeatOptions.style.display = "block";
@@ -1726,13 +1773,13 @@ if ($currentUser) {
       const miniCal = flatpickr("#miniCalendar", {
         inline: true,
         defaultDate: "today",
-        onChange: function (selectedDates) {
+        onChange: function(selectedDates) {
           if (selectedDates.length > 0) {
             const selected = selectedDates[0];
             calendar.gotoDate(selected);
           }
         },
-        onDayCreate: function (dObj, dStr, fp, dayElem) {
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
           const cellDate = new Date(dayElem.dateObj);
           const Y = cellDate.getFullYear();
           const M = cellDate.getMonth();
@@ -1788,6 +1835,7 @@ if ($currentUser) {
         document.getElementById("reminderPopup").style.display = "none";
         setTimeout(displayNextReminder, 10000);
       }
+
       function dontShowReminder() {
         document.getElementById("reminderPopup").style.display = "none";
 
@@ -1797,6 +1845,7 @@ if ($currentUser) {
         }
 
       }
+
       function checkReminders() {
         const now = new Date();
         allEvents.forEach(e => {
@@ -1821,7 +1870,9 @@ if ($currentUser) {
                 el.classList.add("highlight-event");
                 el.addEventListener("animationend", () => {
                   el.classList.remove("highlight-event");
-                }, { once: true });
+                }, {
+                  once: true
+                });
               }
             }
           }
@@ -1846,11 +1897,11 @@ if ($currentUser) {
         eventSources: [],
         height: 'auto',
         eventDisplay: 'block',
-        datesSet: function (info) {
+        datesSet: function(info) {
           calendar.removeAllEvents();
           calendar.refetchEvents();
         },
-        eventDidMount: function (info) {
+        eventDidMount: function(info) {
           const priority = info.event.extendedProps.priority || "low";
           if (info.view.type !== "dayGridMonth") {
             info.el.style.backgroundColor = colors[priority] || colors.low;
@@ -1911,7 +1962,7 @@ if ($currentUser) {
             }
           }
         },
-        events: function (fetchInfo, successCallback, failureCallback) {
+        events: function(fetchInfo, successCallback, failureCallback) {
           axios.get('events.php')
             .then(res => {
               let baseEvents = Array.isArray(res.data) ? res.data : [];
@@ -1949,9 +2000,8 @@ if ($currentUser) {
               successCallback(expandedEvents);
             })
             .catch(() => failureCallback());
-        }
-        ,
-        dayCellDidMount: function (info) {
+        },
+        dayCellDidMount: function(info) {
           const cellDate = info.date;
           const Y = cellDate.getFullYear();
           const M = cellDate.getMonth();
@@ -1979,10 +2029,10 @@ if ($currentUser) {
           if (info.view.type === "dayGridMonth") {
             let events = calendar.getEvents().filter(event => {
               return FullCalendar.formatDate(event.start, {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }) ===
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                }) ===
                 FullCalendar.formatDate(info.date, {
                   year: 'numeric',
                   month: '2-digit',
@@ -2011,7 +2061,7 @@ if ($currentUser) {
             }
           }
         },
-        dateClick: function (info) {
+        dateClick: function(info) {
           document.getElementById('eventForm').reset();
           document.getElementById('eventId').value = "";
           document.getElementById('start').value = info.dateStr.slice(0, 16);
@@ -2026,7 +2076,7 @@ if ($currentUser) {
           if (deleteBtn) deleteBtn.style.display = "none";
           new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
         },
-        eventClick: function (info) {
+        eventClick: function(info) {
 
           const event = info.event;
           currentEvent = event;
@@ -2041,9 +2091,9 @@ if ($currentUser) {
           document.getElementById('repeatFrequency').value = event.extendedProps.repeat_frequency || "";
 
           document.getElementById('reminder').value =
-            parseInt(event.extendedProps.reminder_before) == 0
-              ? 0
-              : event.extendedProps.reminder_before || 0;
+            parseInt(event.extendedProps.reminder_before) == 0 ?
+            0 :
+            event.extendedProps.reminder_before || 0;
           const repeatCheck = document.getElementById('repeatEventCheck');
           repeatCheck.checked = event.extendedProps.is_repeating == true;
           const repeatOptions = document.getElementById('repeatOptions');
@@ -2067,9 +2117,9 @@ if ($currentUser) {
             document.getElementById("leaveBtn").style.display = "none";
           }
           document.getElementById('repeatFrequency').value =
-            event.extendedProps.repeat_frequency && event.extendedProps.repeat_frequency !== ""
-              ? event.extendedProps.repeat_frequency
-              : "";
+            event.extendedProps.repeat_frequency && event.extendedProps.repeat_frequency !== "" ?
+            event.extendedProps.repeat_frequency :
+            "";
 
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
@@ -2099,11 +2149,13 @@ if ($currentUser) {
       const searchResults = document.getElementById('searchResults');
       const filterButtons = document.querySelectorAll('#searchFilterBar [data-filter]');
       let currentFilter = "all";
+
       function createBadge(type) {
         if (type === "Today") return `<span class="badge bg-success ms-2">Today</span>`;
         if (type === "Upcoming") return `<span class="badge bg-primary ms-2">Upcoming</span>`;
         return `<span class="badge bg-secondary ms-2">Past</span>`;
       }
+
       function renderSection(title, items, collapsible = false) {
         if (!items.length) return null;
         const section = document.createElement('div');
@@ -2147,7 +2199,9 @@ if ($currentUser) {
           searchResults.innerHTML = `<div class="list-group-item text-danger">No matching events found.</div>`;
           return;
         }
-        const today = [], upcoming = [], past = [];
+        const today = [],
+          upcoming = [],
+          past = [];
         const now = new Date();
 
         matched.forEach(event => {
@@ -2185,13 +2239,17 @@ if ($currentUser) {
                 // remove highlight class after animation ends
                 el.addEventListener("animationend", () => {
                   el.classList.remove("highlight-event");
-                }, { once: true });
+                }, {
+                  once: true
+                });
               }
             }
           });
 
           // --- helper funcs ---
-          function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+          function wait(ms) {
+            return new Promise(r => setTimeout(r, ms));
+          }
 
           function getScrollableParent(el) {
             while (el) {
@@ -2214,13 +2272,16 @@ if ($currentUser) {
             }
             try {
               calendar.gotoDate(event.start);
-            } catch (err) { }
+            } catch (err) {}
             await wait(120);
             const calEl = calendar.el || document.querySelector('#calendar') || document.body;
             const title = (event.title || '').trim();
             const start = new Date(event.start);
             const timeCandidates = [
-              start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              start.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              }),
               start.toLocaleTimeString(),
               start.toLocaleString()
             ];
@@ -2230,7 +2291,9 @@ if ($currentUser) {
                 const sel = calEl.querySelector(`[data-event-id="${event.id}"]`);
                 if (sel) foundEl = sel;
               }
-            } catch (err) { /* ignore */ }
+            } catch (err) {
+              /* ignore */
+            }
             if (!foundEl) {
               const candidates = calEl.querySelectorAll('.fc-event, .fc-timegrid-event, .fc-list-item'); // cover common classes
               for (const c of candidates) {
@@ -2253,25 +2316,36 @@ if ($currentUser) {
               for (const c of candidates) {
                 const txt = (c.innerText || '').trim();
                 if (title && txt.toLowerCase().includes(title.toLowerCase())) {
-                  if (timeCandidates.some(t => t && txt.includes(t))) { foundEl = c; break; }
+                  if (timeCandidates.some(t => t && txt.includes(t))) {
+                    foundEl = c;
+                    break;
+                  }
                   if (!foundEl) foundEl = c;
                 }
               }
             }
             if (!foundEl) {
-              try { calendar.scrollToTime(event.start); } catch (err) { }
+              try {
+                calendar.scrollToTime(event.start);
+              } catch (err) {}
               return;
             }
             document.querySelectorAll('.highlight-event').forEach(n => n.classList.remove('highlight-event'));
 
             const scrollParent = getScrollableParent(foundEl) || document.scrollingElement || document.body;
             if (scrollParent === document.body || scrollParent === document.documentElement) {
-              foundEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              foundEl.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+              });
             } else {
               const parentRect = scrollParent.getBoundingClientRect();
               const elRect = foundEl.getBoundingClientRect();
               const offset = (elRect.top + scrollParent.scrollTop) - (parentRect.height / 2) + (elRect.height / 2);
-              scrollParent.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+              scrollParent.scrollTo({
+                top: Math.max(0, offset),
+                behavior: 'smooth'
+              });
             }
             foundEl.classList.add('highlight-event');
             setTimeout(() => foundEl.classList.remove('highlight-event'), 2500);
@@ -2282,9 +2356,12 @@ if ($currentUser) {
         });
 
         [renderSection("Today", today),
-        renderSection("Upcoming", upcoming),
-        renderSection("Past", past, true)] // Past collapsible
-          .forEach(section => { if (section) searchResults.appendChild(section); });
+          renderSection("Upcoming", upcoming),
+          renderSection("Past", past, true)
+        ] // Past collapsible
+        .forEach(section => {
+          if (section) searchResults.appendChild(section);
+        });
       }
 
       // Input handler
@@ -2352,7 +2429,7 @@ if ($currentUser) {
         new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
       });
 
-      document.getElementById('eventForm').addEventListener('submit', function (e) {
+      document.getElementById('eventForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const repeatVal = document.getElementById("repeatFrequency").value;
         const isRepeating = document.getElementById("repeatEventCheck").checked ? 1 : 0;
@@ -2365,9 +2442,8 @@ if ($currentUser) {
           invite_rjcode: document.getElementById('invited_users').value,
           description: document.getElementById('description').value,
           is_repeating: isRepeating,
-          repeat_frequency: isRepeating
-            ? (repeatVal && repeatVal !== "--NONE--" ? repeatVal : null)
-            : null,
+          repeat_frequency: isRepeating ?
+            (repeatVal && repeatVal !== "--NONE--" ? repeatVal : null) : null,
           reminder: parseInt(document.getElementById("reminder").value)
         };
         axios.post('save_event.php', formData)
@@ -2380,7 +2456,7 @@ if ($currentUser) {
       });
 
       /* ------------------ Filters ------------------ */
-      document.getElementById('searchBox').addEventListener('keyup', function () {
+      document.getElementById('searchBox').addEventListener('keyup', function() {
         const query = this.value.toLowerCase();
         const filtered = allEvents.filter(e => (e.title || "").toLowerCase().includes(query));
         calendar.removeAllEvents();
@@ -2415,13 +2491,13 @@ if ($currentUser) {
 
       /* ------------------ Delete Event ------------------ */
       if (deleteBtn) {
-        deleteBtn.addEventListener('click', function () {
+        deleteBtn.addEventListener('click', function() {
           const id = document.getElementById('eventId').value;
           if (!id) return;
           if (confirm("Are you sure you want to delete this event?")) {
             axios.post('delete_event.php', {
-              id
-            })
+                id
+              })
               .then(() => {
                 calendar.refetchEvents();
                 showToast('Event deleted.', 'success');
@@ -2435,7 +2511,7 @@ if ($currentUser) {
       document.getElementById('reminderCloseBtn').addEventListener('click', closeReminder);
       document.getElementById('reminderdontshowBtn').addEventListener('click', dontShowReminder);
       document.querySelectorAll(".cancel-invite-btn").forEach(btn => {
-        btn.addEventListener("click", async function () {
+        btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
 
           if (!confirm("Are you sure you want to cancel this invitation?")) return;
@@ -2446,7 +2522,9 @@ if ($currentUser) {
               headers: {
                 "Content-Type": "application/json"
               },
-              body: JSON.stringify({ invite_id: inviteId })
+              body: JSON.stringify({
+                invite_id: inviteId
+              })
             });
 
             const data = await res.json();
@@ -2467,7 +2545,7 @@ if ($currentUser) {
 
       // Handle Accept / Reject actions
       document.querySelectorAll(".invite-action-btn").forEach(btn => {
-        btn.addEventListener("click", async function () {
+        btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
 
@@ -2477,7 +2555,10 @@ if ($currentUser) {
               headers: {
                 "Content-Type": "application/json"
               },
-              body: JSON.stringify({ invite_id: inviteId, action })
+              body: JSON.stringify({
+                invite_id: inviteId,
+                action
+              })
             });
 
             const data = await res.json();
@@ -2497,7 +2578,7 @@ if ($currentUser) {
         });
       });
 
-      document.getElementById("leaveBtn").addEventListener("click", function (e) {
+      document.getElementById("leaveBtn").addEventListener("click", function(e) {
         e.preventDefault();
         if (!currentEvent) {
           showToast("No event selected.", "error");
@@ -2505,10 +2586,14 @@ if ($currentUser) {
         }
         if (confirm("Are you sure you want to leave this event?")) {
           fetch("leave_event.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ event_id: currentEvent.id })
-          })
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                event_id: currentEvent.id
+              })
+            })
             .then(res => res.json())
             .then(data => {
               if (data.success) {

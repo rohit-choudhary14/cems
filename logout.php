@@ -1,12 +1,7 @@
 <?php
 session_start();
-
-// Unset all session variables
 $_SESSION = [];
-
-// Destroy the session
 session_destroy();
-
-header("Location: /cems/");
+header("Location: http://10.130.8.68/intrahc/logout.php");
 exit;
 ?>
