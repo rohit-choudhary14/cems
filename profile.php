@@ -56,8 +56,6 @@ if ($user_rjcode) {
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.css">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
-
   <style>
     body,
     html {
@@ -111,8 +109,27 @@ if ($user_rjcode) {
       font-weight: bold;
     }
 
-    .date-number-red a { color: red !important; }
-.date-number-green a { color: green !important; }
+
+
+  
+    .ui-datepicker td a.ui-state-default.date-number-red-holiday a {
+      color: red !important;
+    }
+
+    .ui-datepicker td a.ui-state-default.date-number-rh a {
+      color: black !important;
+      border: 1px solid black;
+      border-radius: 50%;
+      padding: 0.2em;
+      box-sizing: border-box;
+    }
+  .date-number-red a {
+      color: red !important;
+    }
+
+    .date-number-green a {
+      color: green !important;
+    }
 
     body::-webkit-scrollbar {
       width: 0px;
@@ -1044,7 +1061,7 @@ if ($user_rjcode) {
       color: #6c757d;
       font-weight: 600;
       transition: box-shadow 0.3s ease;
-      border:dotted 1px #80808057
+      border: dotted 1px #80808057
     }
 
     .nav-tabs .nav-link.text-warning.active {
@@ -1124,7 +1141,6 @@ if ($user_rjcode) {
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
-
               <!-- Tabs -->
               <ul class="nav nav-tabs custom-tabs mt-3" id="notifTabs" role="tablist">
                 <li class="nav-item">
@@ -1732,7 +1748,7 @@ if ($user_rjcode) {
     const currentUser = "<?php echo $_SESSION['user_rjcode']; ?>";
   </script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       let currentEvent = null;
 
       function nthWeekdayOfMonth(year, month, weekday, n) {
@@ -1749,8 +1765,7 @@ if ($user_rjcode) {
         }
         return null;
       }
-
-      document.getElementById("repeatEventCheck").addEventListener("change", function () {
+      document.getElementById("repeatEventCheck").addEventListener("change", function() {
         const repeatOptions = document.getElementById("repeatOptions");
         if (this.checked) {
           repeatOptions.style.display = "block";
@@ -1759,39 +1774,95 @@ if ($user_rjcode) {
           document.getElementById("repeatFrequency").value = "";
         }
       });
-
       const calendarEl = document.getElementById('calendar');
       const deleteBtn = document.getElementById('deleteEventBtn');
       let allEvents = [];
       let reminderQueue = [];
       let isReminderShowing = false;
-      $(function () {
+
+
+
+      let holidayMap = {};
+
+      function fetchHolidays(year, month) {
+        $.ajax({
+          url: "proxy.php",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            year: year,
+            month: month
+          }),
+          success: function(response) {
+            console.log("Holiday List:", response);
+            if (response.status === "1" && response.holiday_list) {
+              holidayMap = {};
+
+              response.holiday_list.forEach(h => {
+                holidayMap[h.leave_date] = {
+                  leave_type: h.leave_type,
+                  holiday_name: h.holiday_name
+                };
+              });
+              $("#miniCalendar").datepicker("refresh");
+            } else {
+              console.warn("No holidays found");
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Failed to fetch holiday data:", error);
+          }
+        });
+      }
+
+      // Your function to get nth weekday
+      function nthWeekdayOfMonth(year, month, weekday, n) {
+        let date = new Date(year, month, 1);
+        let count = 0;
+        while (date.getMonth() === month) {
+          if (date.getDay() === weekday) {
+            count++;
+            if (count === n) {
+              return new Date(date);
+            }
+          }
+          date.setDate(date.getDate() + 1);
+        }
+        return null;
+      }
+
+      $(function() {
+        const currentDate = new Date();
+        fetchHolidays(currentDate.getFullYear(), currentDate.getMonth() + 1);
+
         $("#miniCalendar").datepicker({
           showOtherMonths: true,
           selectOtherMonths: true,
-          onSelect: function (dateText) {
+          onSelect: function(dateText) {
             const selected = new Date(dateText);
-            calendar.gotoDate(selected);  // main calendar sync
+            calendar.gotoDate(selected);
           },
-
-          // when month/year is changed
-          onChangeMonthYear: function (year, month) {
+          onChangeMonthYear: function(year, month) {
             const newDate = new Date(year, month - 1, 1);
-            calendar.gotoDate(newDate);   // move main calendar
+            calendar.gotoDate(newDate);
+            fetchHolidays(year, month);
           },
-          beforeShowDay: function (date) {
+          beforeShowDay: function(date) {
             let Y = date.getFullYear();
             let M = date.getMonth();
             let D = date.getDate();
             let weekday = date.getDay();
             let classes = "";
-
-            // Sundays
-            if (weekday === 0) {
-              classes = "date-number-red";
+            let dateStr = date.toISOString().split("T")[0];
+            if (holidayMap[dateStr]) {
+              const leaveType = holidayMap[dateStr].leave_type;
+              console.log(leaveType)
+              if (leaveType === "RH") {
+                classes = "date-number-rh";
+              } else {
+                classes = "date-number-red-holiday";
+              }
             }
-
-            // Saturdays - check nth
             let firstSat = nthWeekdayOfMonth(Y, M, 6, 1);
             let secondSat = nthWeekdayOfMonth(Y, M, 6, 2);
             let thirdSat = nthWeekdayOfMonth(Y, M, 6, 3);
@@ -1799,31 +1870,23 @@ if ($user_rjcode) {
 
             if ((firstSat && firstSat.getDate() === D) ||
               (thirdSat && thirdSat.getDate() === D)) {
-              classes = "date-number-green";  // 1st + 3rd
+              classes += " date-number-green";
             }
             if ((secondSat && secondSat.getDate() === D) ||
               (fourthSat && fourthSat.getDate() === D)) {
-              classes = "date-number-red";    // 2nd + 4th
+              classes += " date-number-red";
             }
-
-            return [true, classes];
+            if (weekday === 0) {
+              classes += " date-number-red";
+            }
+            return [true, classes.trim()];
           }
 
         });
       });
 
-      function nthWeekdayOfMonth(year, month, weekday, n) {
-        let count = 0;
-        for (let d = 1; d <= 31; d++) {
-          let date = new Date(year, month, d);
-          if (date.getMonth() !== month) break;
-          if (date.getDay() === weekday) {
-            count++;
-            if (count === n) return date;
-          }
-        }
-        return null;
-      }
+
+
       /* ------------------ Reminder System ------------------ */
       function showReminder(title, message, id) {
         reminderQueue.push({
@@ -1917,11 +1980,11 @@ if ($user_rjcode) {
         eventSources: [],
         height: 'auto',
         eventDisplay: 'block',
-        datesSet: function (info) {
+        datesSet: function(info) {
           calendar.removeAllEvents();
           calendar.refetchEvents();
         },
-        eventDidMount: function (info) {
+        eventDidMount: function(info) {
           const priority = info.event.extendedProps.priority || "low";
           if (info.view.type !== "dayGridMonth") {
             info.el.style.backgroundColor = colors[priority] || colors.low;
@@ -1982,7 +2045,7 @@ if ($user_rjcode) {
             }
           }
         },
-        events: function (fetchInfo, successCallback, failureCallback) {
+        events: function(fetchInfo, successCallback, failureCallback) {
           axios.get('events.php')
             .then(res => {
               let baseEvents = Array.isArray(res.data) ? res.data : [];
@@ -2021,7 +2084,7 @@ if ($user_rjcode) {
             })
             .catch(() => failureCallback());
         },
-        dayCellDidMount: function (info) {
+        dayCellDidMount: function(info) {
           const cellDate = info.date;
           const Y = cellDate.getFullYear();
           const M = cellDate.getMonth();
@@ -2049,10 +2112,10 @@ if ($user_rjcode) {
           if (info.view.type === "dayGridMonth") {
             let events = calendar.getEvents().filter(event => {
               return FullCalendar.formatDate(event.start, {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }) ===
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                }) ===
                 FullCalendar.formatDate(info.date, {
                   year: 'numeric',
                   month: '2-digit',
@@ -2081,7 +2144,7 @@ if ($user_rjcode) {
             }
           }
         },
-        dateClick: function (info) {
+        dateClick: function(info) {
           document.getElementById('eventForm').reset();
           document.getElementById('eventId').value = "";
           document.getElementById('start').value = info.dateStr.slice(0, 16);
@@ -2096,7 +2159,7 @@ if ($user_rjcode) {
           if (deleteBtn) deleteBtn.style.display = "none";
           new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
         },
-        eventClick: function (info) {
+        eventClick: function(info) {
 
           const event = info.event;
           currentEvent = event;
@@ -2112,8 +2175,8 @@ if ($user_rjcode) {
 
           document.getElementById('reminder').value =
             parseInt(event.extendedProps.reminder_before) == 0 ?
-              0 :
-              event.extendedProps.reminder_before || 0;
+            0 :
+            event.extendedProps.reminder_before || 0;
           const repeatCheck = document.getElementById('repeatEventCheck');
           repeatCheck.checked = event.extendedProps.is_repeating == true;
           const repeatOptions = document.getElementById('repeatOptions');
@@ -2138,8 +2201,8 @@ if ($user_rjcode) {
           }
           document.getElementById('repeatFrequency').value =
             event.extendedProps.repeat_frequency && event.extendedProps.repeat_frequency !== "" ?
-              event.extendedProps.repeat_frequency :
-              "";
+            event.extendedProps.repeat_frequency :
+            "";
 
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
@@ -2292,7 +2355,7 @@ if ($user_rjcode) {
             }
             try {
               calendar.gotoDate(event.start);
-            } catch (err) { }
+            } catch (err) {}
             await wait(120);
             const calEl = calendar.el || document.querySelector('#calendar') || document.body;
             const title = (event.title || '').trim();
@@ -2347,7 +2410,7 @@ if ($user_rjcode) {
             if (!foundEl) {
               try {
                 calendar.scrollToTime(event.start);
-              } catch (err) { }
+              } catch (err) {}
               return;
             }
             document.querySelectorAll('.highlight-event').forEach(n => n.classList.remove('highlight-event'));
@@ -2376,12 +2439,12 @@ if ($user_rjcode) {
         });
 
         [renderSection("Today", today),
-        renderSection("Upcoming", upcoming),
-        renderSection("Past", past, true)
+          renderSection("Upcoming", upcoming),
+          renderSection("Past", past, true)
         ] // Past collapsible
-          .forEach(section => {
-            if (section) searchResults.appendChild(section);
-          });
+        .forEach(section => {
+          if (section) searchResults.appendChild(section);
+        });
       }
 
       // Input handler
@@ -2449,7 +2512,7 @@ if ($user_rjcode) {
         new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
       });
 
-      document.getElementById('eventForm').addEventListener('submit', function (e) {
+      document.getElementById('eventForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const repeatVal = document.getElementById("repeatFrequency").value;
         const isRepeating = document.getElementById("repeatEventCheck").checked ? 1 : 0;
@@ -2476,7 +2539,7 @@ if ($user_rjcode) {
       });
 
       /* ------------------ Filters ------------------ */
-      document.getElementById('searchBox').addEventListener('keyup', function () {
+      document.getElementById('searchBox').addEventListener('keyup', function() {
         const query = this.value.toLowerCase();
         const filtered = allEvents.filter(e => (e.title || "").toLowerCase().includes(query));
         calendar.removeAllEvents();
@@ -2511,13 +2574,13 @@ if ($user_rjcode) {
 
       /* ------------------ Delete Event ------------------ */
       if (deleteBtn) {
-        deleteBtn.addEventListener('click', function () {
+        deleteBtn.addEventListener('click', function() {
           const id = document.getElementById('eventId').value;
           if (!id) return;
           if (confirm("Are you sure you want to delete this event?")) {
             axios.post('delete_event.php', {
-              id
-            })
+                id
+              })
               .then(() => {
                 calendar.refetchEvents();
                 showToast('Event deleted.', 'success');
@@ -2531,7 +2594,7 @@ if ($user_rjcode) {
       document.getElementById('reminderCloseBtn').addEventListener('click', closeReminder);
       document.getElementById('reminderdontshowBtn').addEventListener('click', dontShowReminder);
       document.querySelectorAll(".cancel-invite-btn").forEach(btn => {
-        btn.addEventListener("click", async function () {
+        btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
 
           if (!confirm("Are you sure you want to cancel this invitation?")) return;
@@ -2565,7 +2628,7 @@ if ($user_rjcode) {
 
       // Handle Accept / Reject actions
       document.querySelectorAll(".invite-action-btn").forEach(btn => {
-        btn.addEventListener("click", async function () {
+        btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
 
@@ -2598,7 +2661,7 @@ if ($user_rjcode) {
         });
       });
 
-      document.getElementById("leaveBtn").addEventListener("click", function (e) {
+      document.getElementById("leaveBtn").addEventListener("click", function(e) {
         e.preventDefault();
         if (!currentEvent) {
           showToast("No event selected.", "error");
@@ -2606,14 +2669,14 @@ if ($user_rjcode) {
         }
         if (confirm("Are you sure you want to leave this event?")) {
           fetch("leave_event.php", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              event_id: currentEvent.id
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                event_id: currentEvent.id
+              })
             })
-          })
             .then(res => res.json())
             .then(data => {
               if (data.success) {
@@ -2650,7 +2713,6 @@ if ($user_rjcode) {
 
     });
   </script>
-  <script src="./js/flatpickr.js"></script>
 </body>
 
 </html>

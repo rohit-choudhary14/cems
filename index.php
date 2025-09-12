@@ -1,5 +1,13 @@
 <?php
 session_start();
+
+
+$_SESSION['user_rjcode'] = 'RJ00001';
+$_SESSION['user_name'] ='Rohit';
+
+$_SESSION['success'] = true;
+$_SESSION['type'] = 'success';
+$_SESSION['message'] = 'Login successful';
 if (isset($_SESSION['user_rjcode'])) {
   header("Location: profile.php");
   exit;
