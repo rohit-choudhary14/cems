@@ -55,7 +55,6 @@ if ($user_rjcode) {
   <!-- jQuery UI -->
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.css">
-
   <style>
     body,
     html {
@@ -76,9 +75,6 @@ if ($user_rjcode) {
       z-index: 1000;
       background: #022f66;
     }
-
-
-
 
     #miniCalendar {
       position: relative;
@@ -109,21 +105,55 @@ if ($user_rjcode) {
       font-weight: bold;
     }
 
-
-
-  
-    .ui-datepicker td a.ui-state-default.date-number-red-holiday a {
+    .date-number-red-holiday a {
       color: red !important;
     }
 
-    .ui-datepicker td a.ui-state-default.date-number-rh a {
-      color: black !important;
-      border: 1px solid black;
-      border-radius: 50%;
-      padding: 0.2em;
-      box-sizing: border-box;
+    .date-number-rh a {
+      background-color: #444 !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
     }
-  .date-number-red a {
+      .date-number-gh a {
+      background-color: #e42727ff !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
+    }
+
+    .date-number-sunday a {
+      background-color: #d33333ff !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
+      font-weight: 700 !important;
+    }
+
+    .date-number-1th-saturday  a {
+      background-color: #439e4bff !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
+      font-weight: 700 !important;
+    }
+    .date-number-3th-saturday  a {
+      background-color: #439e4bff !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
+      font-weight: 700 !important;
+    }
+
+    .date-number-2th-saturday  a {
+      background-color: #d33333ff !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
+      font-weight: 700 !important;
+    }
+    .date-number-4th-saturday  a {
+      background-color: #d33333ff !important;
+      color: #fff !important;
+      transition: background-color 0.3s ease;
+      font-weight: 700 !important;
+    }
+
+    .date-number-red a {
       color: red !important;
     }
 
@@ -231,8 +261,6 @@ if ($user_rjcode) {
         padding: 15px;
         margin-bottom: 180px;
       }
-
-
 
       #calendar .fc-header-toolbar,
       #calendar .fc-footer-toolbar {
@@ -1061,7 +1089,7 @@ if ($user_rjcode) {
       color: #6c757d;
       font-weight: 600;
       transition: box-shadow 0.3s ease;
-      border: dotted 1px #80808057
+
     }
 
     .nav-tabs .nav-link.text-warning.active {
@@ -1779,9 +1807,6 @@ if ($user_rjcode) {
       let allEvents = [];
       let reminderQueue = [];
       let isReminderShowing = false;
-
-
-
       let holidayMap = {};
 
       function fetchHolidays(year, month) {
@@ -1794,15 +1819,18 @@ if ($user_rjcode) {
             month: month
           }),
           success: function(response) {
-            console.log("Holiday List:", response);
+
             if (response.status === "1" && response.holiday_list) {
               holidayMap = {};
-
               response.holiday_list.forEach(h => {
-                holidayMap[h.leave_date] = {
+                if (!holidayMap[h.leave_date]) {
+                  holidayMap[h.leave_date] = [];
+                }
+                holidayMap[h.leave_date].push({
                   leave_type: h.leave_type,
-                  holiday_name: h.holiday_name
-                };
+                  holiday_name: h.holiday_name,
+                  court: h.court
+                });
               });
               $("#miniCalendar").datepicker("refresh");
             } else {
@@ -1815,7 +1843,6 @@ if ($user_rjcode) {
         });
       }
 
-      // Your function to get nth weekday
       function nthWeekdayOfMonth(year, month, weekday, n) {
         let date = new Date(year, month, 1);
         let count = 0;
@@ -1830,11 +1857,9 @@ if ($user_rjcode) {
         }
         return null;
       }
-
       $(function() {
         const currentDate = new Date();
         fetchHolidays(currentDate.getFullYear(), currentDate.getMonth() + 1);
-
         $("#miniCalendar").datepicker({
           showOtherMonths: true,
           selectOtherMonths: true,
@@ -1848,39 +1873,69 @@ if ($user_rjcode) {
             fetchHolidays(year, month);
           },
           beforeShowDay: function(date) {
-            let Y = date.getFullYear();
-            let M = date.getMonth();
-            let D = date.getDate();
-            let weekday = date.getDay();
             let classes = "";
-            let dateStr = date.toISOString().split("T")[0];
-            if (holidayMap[dateStr]) {
-              const leaveType = holidayMap[dateStr].leave_type;
-              console.log(leaveType)
-              if (leaveType === "RH") {
-                classes = "date-number-rh";
-              } else {
-                classes = "date-number-red-holiday";
+            let tooltip = "";
+            let dateStr = formatDateLocalForMiniCalendar(date);
+            if (date.getDay() === 0) {
+              classes += " date-number-sunday";
+              tooltip = tooltip ? tooltip + ", Sunday" : "Sunday";
+            }
+            if (date.getDay() === 6) {
+              const dayOfMonth = date.getDate();
+              const saturdayNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+              if (saturdayNumber >= 1 && saturdayNumber <= 4) {
+                classes += ` date-number-${saturdayNumber}th-saturday`;
+
+                const saturdayLabel = ["First", "Second", "Third", "Fourth"][saturdayNumber - 1] + " Saturday";
+                tooltip = tooltip ? tooltip + ", " + saturdayLabel : saturdayLabel;
               }
             }
-            let firstSat = nthWeekdayOfMonth(Y, M, 6, 1);
-            let secondSat = nthWeekdayOfMonth(Y, M, 6, 2);
-            let thirdSat = nthWeekdayOfMonth(Y, M, 6, 3);
-            let fourthSat = nthWeekdayOfMonth(Y, M, 6, 4);
 
-            if ((firstSat && firstSat.getDate() === D) ||
-              (thirdSat && thirdSat.getDate() === D)) {
-              classes += " date-number-green";
+            // Check if date is a holiday from holidayMap
+            if (holidayMap[dateStr]) {
+              let holidayNames = holidayMap[dateStr].map(holiday => holiday.holiday_name || "Holiday").join(", ");
+              let addedRHClass = false;
+
+              holidayMap[dateStr].forEach(holiday => {
+                if (addedRHClass) return;
+                const leaveType = holiday.leave_type;
+                let courts = holiday.court.split(",");
+                if (courts[0] === "HC_JAI" && leaveType === "RH") {
+                  classes += " date-number-rh";
+                  addedRHClass = true;
+                }
+                else if (courts[0] === "HC_JAI" && leaveType === "GH") {
+                  classes += " date-number-gh";
+                  addedRHClass = true;
+                }
+              });
+
+              tooltip = tooltip ? tooltip + ", " + holidayNames : holidayNames;
             }
-            if ((secondSat && secondSat.getDate() === D) ||
-              (fourthSat && fourthSat.getDate() === D)) {
-              classes += " date-number-red";
-            }
-            if (weekday === 0) {
-              classes += " date-number-red";
-            }
-            return [true, classes.trim()];
+
+            return [true, classes.trim(), tooltip];
           }
+
+
+          // beforeShowDay: function(date) {
+          //   // let firstSat = nthWeekdayOfMonth(Y, M, 6, 1);
+          //   // let secondSat = nthWeekdayOfMonth(Y, M, 6, 2);
+          //   // let thirdSat = nthWeekdayOfMonth(Y, M, 6, 3);
+          //   // let fourthSat = nthWeekdayOfMonth(Y, M, 6, 4);
+
+          //   // if ((firstSat && firstSat.getDate() === D) ||
+          //   //   (thirdSat && thirdSat.getDate() === D)) {
+          //   //   classes += " date-number-green";
+          //   // }
+          //   // if ((secondSat && secondSat.getDate() === D) ||
+          //   //   (fourthSat && fourthSat.getDate() === D)) {
+          //   //   classes += " date-number-red";
+          //   // }
+          //   // if (weekday === 0) {
+          //   //   classes += " date-number-red";
+          //   // }
+          //   return [true, classes.trim()];
+          // }
 
         });
       });
@@ -1962,6 +2017,13 @@ if ($user_rjcode) {
         });
       }
       setInterval(checkReminders, 10000);
+
+      function formatDateLocalForMiniCalendar(date) {
+        let y = date.getFullYear();
+        let m = (date.getMonth() + 1).toString().padStart(2, "0");
+        let d = date.getDate().toString().padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
 
       function formatDateLocal(date) {
         if (!date) return "";
