@@ -40,21 +40,19 @@ if ($user_rjcode) {
   <meta charset="UTF-8">
   <title>Calendar Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="./css/bootstrap.min.css" rel="stylesheet">
   <!-- Flatpickr CSS -->
   <link rel="stylesheet" href="./css/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="./css/bootstrap-icons.css">
 
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="./js/index.global.min.js"></script>
+  <script src="./js/axios.min.js"></script>
+  <script src="./js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="./css/font-awesome.min.css">
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-  <!-- jQuery UI -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.css">
+  <script src="./js/jquery-3.6.0.min.js"></script>
+  <script src="./js/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="./css/jquery-ui.css">
   <style>
     body,
     html {
@@ -78,15 +76,14 @@ if ($user_rjcode) {
 
     #miniCalendar {
       position: relative;
-      padding: 20px;
       margin-bottom: 30px;
-      /* top: 85px; */
-    
     }
-    #left_section_for_miniCal{
-       margin-top: 85px;
-  border-radius: 12px;
+
+    #left_section_for_miniCal {
+      margin-top: 85px;
+      border-radius: 12px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding:15px;
     }
 
     #calendar {
@@ -803,7 +800,6 @@ if ($user_rjcode) {
       opacity: 1;
     }
 
-    /* Progress bar */
     .progress {
       position: absolute;
       bottom: 0;
@@ -814,7 +810,6 @@ if ($user_rjcode) {
       animation: shrink linear forwards;
     }
 
-    /* Colors */
     .success {
       background: linear-gradient(135deg, #28a745, #218838);
     }
@@ -897,7 +892,7 @@ if ($user_rjcode) {
 
     .custom-tabs .nav-link.active {
       color: #fff;
-      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      background: #022f66;
       border-radius: 20px;
     }
 
@@ -1128,13 +1123,18 @@ if ($user_rjcode) {
     }
 
     #holidayList {
-      padding: 10px;
-      border-top: 1px solid #ddd;
-      /* margin-top: 10px; */
+      display: grid;
+      gap: 10px;
+    
+      color: red;
     }
 
     #holidayList div {
-      margin-bottom: 5px;
+      background-color: #e1e1e1;
+      /* optional for visual clarity */
+      padding: 8px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
   </style>
 
@@ -1582,33 +1582,17 @@ if ($user_rjcode) {
     <div class="row">
       <div class="col-md-4" id="left_section_for_miniCal">
         <div class="row">
-    <div class="col-12">
-      <div id="miniCalendar"></div>
-    </div>
-  </div>
-  
-  <!-- Second Row: Holiday List -->
-  <div class="row">
-    <div class="col-12">
-      <div id="holidayList">
-         <div><strong>2025-09-06:</strong> Sunday</div>
-            <div><strong>2025-09-07:</strong> Gandhi Jayanti</div>
-            <div><strong>2025-09-13:</strong> Saturday</div>
-            <div><strong>2025-09-20:</strong> Sunday</div>
-      </div>
-    </div>
-  </div>
-        <!-- <div id="miniCalendar">
-          <div id="holidayList">
-            <div><strong>2025-09-06:</strong> Sunday</div>
-            <div><strong>2025-09-07:</strong> Gandhi Jayanti</div>
-            <div><strong>2025-09-13:</strong> Saturday</div>
-            <div><strong>2025-09-20:</strong> Sunday</div>
+          <div class="col-12">
+            <div id="miniCalendar"></div>
           </div>
-        </div> -->
-
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div id="holidayList">
+            </div>
+          </div>
+        </div>
       </div>
-      <!-- Main Calendar -->
       <div class="col-md-8">
         <ul class="nav nav-tabs" style="margin-top:85px;">
           <li class="nav-item col-6 col-md-3">
@@ -1692,9 +1676,9 @@ if ($user_rjcode) {
             <i class="bi bi-exclamation-circle-fill me-2"></i>Priority
           </label>
           <select id="priority" class="form-control">
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+            <option value="low"> <span>🟩</span> Low</option>
+            <option value="medium"> <span>🟨</span> Medium</option>
+            <option value="high"><span>🟥</span> High</option>
           </select>
         </div>
         <!-- Remind Me Before -->
@@ -1760,29 +1744,24 @@ if ($user_rjcode) {
 
     </div>
   </div>
-  <!-- Toast container -->
   <div class="notification-container" id="notification-container"></div>
   <script>
     const bell = document.getElementById("notificationBell");
     const panel = document.getElementById("notificationPanel");
     const overlay = document.getElementById("notificationOverlay");
     const closeBtn = document.getElementById("closePanel");
-
     bell.addEventListener("click", () => {
       panel.classList.add("active");
       overlay.style.display = "block";
     });
-
     closeBtn.addEventListener("click", () => {
       panel.classList.remove("active");
       overlay.style.display = "none";
     });
-
     overlay.addEventListener("click", () => {
       panel.classList.remove("active");
       overlay.style.display = "none";
     });
-
     const notifBtnMb = document.getElementById("notificationBellMb");
     const notifSheetMb = document.getElementById("notifSheetMb");
     const notifOverlayMb = document.getElementById("notifOverlayMb");
@@ -1797,19 +1776,16 @@ if ($user_rjcode) {
       notifSheetMb.classList.remove("active");
       notifOverlayMb.classList.remove("active");
     }
-
     notifBtnMb.addEventListener("click", openSheet);
     closeBtnMb.addEventListener("click", closeSheet);
     notifOverlayMb.addEventListener("click", closeSheet);
-
-    /* Swipe down gesture */
     let startY = 0;
     notifSheetMb.addEventListener("touchstart", (e) => {
       startY = e.touches[0].clientY;
     });
     notifSheetMb.addEventListener("touchmove", (e) => {
       let currentY = e.touches[0].clientY;
-      if (currentY - startY > 100) { // swipe down threshold
+      if (currentY - startY > 100) {
         closeSheet();
       }
     });
@@ -1818,7 +1794,7 @@ if ($user_rjcode) {
     const currentUser = "<?php echo $_SESSION['user_rjcode']; ?>";
   </script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       let currentEvent = null;
 
       function nthWeekdayOfMonth(year, month, weekday, n) {
@@ -1835,7 +1811,7 @@ if ($user_rjcode) {
         }
         return null;
       }
-      document.getElementById("repeatEventCheck").addEventListener("change", function () {
+      document.getElementById("repeatEventCheck").addEventListener("change", function() {
         const repeatOptions = document.getElementById("repeatOptions");
         if (this.checked) {
           repeatOptions.style.display = "block";
@@ -1851,6 +1827,21 @@ if ($user_rjcode) {
       let isReminderShowing = false;
       let holidayMap = {};
 
+      function renderHolidayList(holidayListNameForRhcJaipur) {
+        let html = "";
+        holidayListNameForRhcJaipur.sort((a, b) => {
+          return new Date(a.leave_date) - new Date(b.leave_date);
+        });
+        for (let i = 0; i < holidayListNameForRhcJaipur.length; i++) {
+          let holiday = holidayListNameForRhcJaipur[i];
+          let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
+          html += `<div>${label}</div>`;
+        }
+
+        $("#holidayList").html(html);
+      }
+
+
       function fetchHolidays(year, month) {
         $.ajax({
           url: "proxy.php",
@@ -1860,11 +1851,23 @@ if ($user_rjcode) {
             year: year,
             month: month
           }),
-          success: function (response) {
+          success: function(response) {
 
             if (response.status === "1" && response.holiday_list) {
               holidayMap = {};
+              holidayListNameForRhcJaipur = [];
               response.holiday_list.forEach(h => {
+                let courts = h.court;
+                if (typeof courts === "string") {
+                  courts = courts.split(",");
+                }
+
+                if (Array.isArray(courts) && courts[0] === "HC_JAI") {
+                  holidayListNameForRhcJaipur.push({
+                    leave_date: h.leave_date,
+                    holiday_name: h.holiday_name
+                  });
+                }
                 if (!holidayMap[h.leave_date]) {
                   holidayMap[h.leave_date] = [];
                 }
@@ -1875,11 +1878,12 @@ if ($user_rjcode) {
                 });
               });
               $("#miniCalendar").datepicker("refresh");
+              renderHolidayList(holidayListNameForRhcJaipur);
             } else {
               console.warn("No holidays found");
             }
           },
-          error: function (xhr, status, error) {
+          error: function(xhr, status, error) {
             console.error("Failed to fetch holiday data:", error);
           }
         });
@@ -1899,98 +1903,71 @@ if ($user_rjcode) {
         }
         return null;
       }
-      $(function () {
+      $(function() {
         const currentDate = new Date();
         fetchHolidays(currentDate.getFullYear(), currentDate.getMonth() + 1);
-        function renderHolidayList() {
-          let html = "";
-
-          // Collect all dates in the current month
-          const currentDate = $("#miniCalendar").datepicker("getDate") || new Date();
-          const year = currentDate.getFullYear();
-          const month = currentDate.getMonth(); // zero-based
-
-          const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-          for (let day = 1; day <= daysInMonth; day++) {
-            const date = new Date(year, month, day);
-            const dateStr = formatDateLocalForMiniCalendar(date);
-            const dayOfWeek = date.getDay();
-            let label = "";
-
-            if (holidayMap[dateStr]) {
-              const holidayNames = holidayMap[dateStr].map(h => h.holiday_name || "Holiday").join(", ");
-              label = `<strong>${dateStr}:</strong> ${holidayNames}`;
-            } else if (dayOfWeek === 0) { // Sunday
-              label = `<strong>${dateStr}:</strong> Sunday`;
-            } else if (dayOfWeek === 6) { // Saturday
-              label = `<strong>${dateStr}:</strong> Saturday`;
-            }
-
-            if (label) {
-              html += `<div>${label}</div>`;
-            }
-          }
-
-          $("#holidayList").html(html);
-        }
-
-
         $("#miniCalendar").datepicker({
           showOtherMonths: true,
           selectOtherMonths: true,
-          onSelect: function (dateText) {
+          onSelect: function(dateText) {
             const selected = new Date(dateText);
             calendar.gotoDate(selected);
           },
-          onChangeMonthYear: function (year, month) {
+          onChangeMonthYear: function(year, month) {
             const newDate = new Date(year, month - 1, 1);
             calendar.gotoDate(newDate);
             fetchHolidays(year, month);
           },
-          beforeShowDay: function (date) {
+          beforeShowDay: function(date) {
             let classes = "";
             let tooltip = "";
             let dateStr = formatDateLocalForMiniCalendar(date);
-            if (date.getDay() === 0) {
-              classes += " date-number-sunday";
-              tooltip = tooltip ? tooltip + ", Sunday" : "Sunday";
-            }
-            if (date.getDay() === 6) {
-              const dayOfMonth = date.getDate();
-              const saturdayNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
-              if (saturdayNumber >= 1 && saturdayNumber <= 4) {
-                classes += ` date-number-${saturdayNumber}th-saturday`;
-
-                const saturdayLabel = ["First", "Second", "Third", "Fourth"][saturdayNumber - 1] + " Saturday";
-                tooltip = tooltip ? tooltip + ", " + saturdayLabel : saturdayLabel;
-              }
-            }
+            let isHoliday = false;
             if (holidayMap[dateStr]) {
               let holidayNames = holidayMap[dateStr].map(holiday => holiday.holiday_name || "Holiday").join(", ");
               let addedRHClass = false;
-
               holidayMap[dateStr].forEach(holiday => {
                 if (addedRHClass) return;
                 const leaveType = holiday.leave_type;
                 let courts = holiday.court.split(",");
-                if (courts[0] === "HC_JAI" && leaveType === "RH") {
-                  classes += " date-number-rh";
-                  addedRHClass = true;
-                }
-                else if (courts[0] === "HC_JAI" && leaveType === "GH") {
-                  classes += " date-number-gh";
-                  addedRHClass = true;
+                if (courts[0] === "HC_JAI") {
+                  if (leaveType === "RH") {
+                    classes += " date-number-rh";
+                    addedRHClass = true;
+                  } else if (leaveType === "GH") {
+                    classes += " date-number-gh";
+                    addedRHClass = true;
+                  }
                 }
               });
-              tooltip = tooltip ? tooltip + ", " + holidayNames : holidayNames;
+              if (addedRHClass) {
+                isHoliday = true;
+                tooltip = holidayNames;
+              }
+              if (!isHoliday) {
+                const day = date.getDay();
+                if (day === 0) {
+                  classes += " date-number-sunday";
+                  tooltip = tooltip ? tooltip + ", Sunday" : "Sunday";
+                }
+                if (day === 6) {
+                  const dayOfMonth = date.getDate();
+                  const saturdayNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+                  if (saturdayNumber >= 1 && saturdayNumber <= 4) {
+                    classes += ` date-number-${saturdayNumber}th-saturday`;
+                    const saturdayLabel = ["First", "Second", "Third", "Fourth"][saturdayNumber - 1] + " Saturday";
+                    tooltip = tooltip ? tooltip + ", " + saturdayLabel : saturdayLabel;
+                  }
+                }
+              }
+
             }
+
+
             return [true, classes.trim(), tooltip];
           }
+
         });
-        // fetchHolidays(currentDate.getFullYear(), currentDate.getMonth() + 1).then(() => {
-        //   renderHolidayList();
-        // });
       });
 
 
@@ -2095,11 +2072,11 @@ if ($user_rjcode) {
         eventSources: [],
         height: 'auto',
         eventDisplay: 'block',
-        datesSet: function (info) {
+        datesSet: function(info) {
           calendar.removeAllEvents();
           calendar.refetchEvents();
         },
-        eventDidMount: function (info) {
+        eventDidMount: function(info) {
           const priority = info.event.extendedProps.priority || "low";
           if (info.view.type !== "dayGridMonth") {
             info.el.style.backgroundColor = colors[priority] || colors.low;
@@ -2160,7 +2137,7 @@ if ($user_rjcode) {
             }
           }
         },
-        events: function (fetchInfo, successCallback, failureCallback) {
+        events: function(fetchInfo, successCallback, failureCallback) {
           axios.get('events.php')
             .then(res => {
               let baseEvents = Array.isArray(res.data) ? res.data : [];
@@ -2199,7 +2176,7 @@ if ($user_rjcode) {
             })
             .catch(() => failureCallback());
         },
-        dayCellDidMount: function (info) {
+        dayCellDidMount: function(info) {
           const cellDate = info.date;
           const Y = cellDate.getFullYear();
           const M = cellDate.getMonth();
@@ -2227,10 +2204,10 @@ if ($user_rjcode) {
           if (info.view.type === "dayGridMonth") {
             let events = calendar.getEvents().filter(event => {
               return FullCalendar.formatDate(event.start, {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }) ===
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                }) ===
                 FullCalendar.formatDate(info.date, {
                   year: 'numeric',
                   month: '2-digit',
@@ -2259,7 +2236,7 @@ if ($user_rjcode) {
             }
           }
         },
-        dateClick: function (info) {
+        dateClick: function(info) {
           document.getElementById('eventForm').reset();
           document.getElementById('eventId').value = "";
           document.getElementById('start').value = info.dateStr.slice(0, 16);
@@ -2274,7 +2251,7 @@ if ($user_rjcode) {
           if (deleteBtn) deleteBtn.style.display = "none";
           new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
         },
-        eventClick: function (info) {
+        eventClick: function(info) {
 
           const event = info.event;
           currentEvent = event;
@@ -2290,8 +2267,8 @@ if ($user_rjcode) {
 
           document.getElementById('reminder').value =
             parseInt(event.extendedProps.reminder_before) == 0 ?
-              0 :
-              event.extendedProps.reminder_before || 0;
+            0 :
+            event.extendedProps.reminder_before || 0;
           const repeatCheck = document.getElementById('repeatEventCheck');
           repeatCheck.checked = event.extendedProps.is_repeating == true;
           const repeatOptions = document.getElementById('repeatOptions');
@@ -2316,8 +2293,8 @@ if ($user_rjcode) {
           }
           document.getElementById('repeatFrequency').value =
             event.extendedProps.repeat_frequency && event.extendedProps.repeat_frequency !== "" ?
-              event.extendedProps.repeat_frequency :
-              "";
+            event.extendedProps.repeat_frequency :
+            "";
 
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
@@ -2470,7 +2447,7 @@ if ($user_rjcode) {
             }
             try {
               calendar.gotoDate(event.start);
-            } catch (err) { }
+            } catch (err) {}
             await wait(120);
             const calEl = calendar.el || document.querySelector('#calendar') || document.body;
             const title = (event.title || '').trim();
@@ -2525,7 +2502,7 @@ if ($user_rjcode) {
             if (!foundEl) {
               try {
                 calendar.scrollToTime(event.start);
-              } catch (err) { }
+              } catch (err) {}
               return;
             }
             document.querySelectorAll('.highlight-event').forEach(n => n.classList.remove('highlight-event'));
@@ -2554,12 +2531,12 @@ if ($user_rjcode) {
         });
 
         [renderSection("Today", today),
-        renderSection("Upcoming", upcoming),
-        renderSection("Past", past, true)
+          renderSection("Upcoming", upcoming),
+          renderSection("Past", past, true)
         ] // Past collapsible
-          .forEach(section => {
-            if (section) searchResults.appendChild(section);
-          });
+        .forEach(section => {
+          if (section) searchResults.appendChild(section);
+        });
       }
 
       // Input handler
@@ -2627,7 +2604,7 @@ if ($user_rjcode) {
         new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
       });
 
-      document.getElementById('eventForm').addEventListener('submit', function (e) {
+      document.getElementById('eventForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const repeatVal = document.getElementById("repeatFrequency").value;
         const isRepeating = document.getElementById("repeatEventCheck").checked ? 1 : 0;
@@ -2654,7 +2631,7 @@ if ($user_rjcode) {
       });
 
       /* ------------------ Filters ------------------ */
-      document.getElementById('searchBox').addEventListener('keyup', function () {
+      document.getElementById('searchBox').addEventListener('keyup', function() {
         const query = this.value.toLowerCase();
         const filtered = allEvents.filter(e => (e.title || "").toLowerCase().includes(query));
         calendar.removeAllEvents();
@@ -2689,13 +2666,13 @@ if ($user_rjcode) {
 
       /* ------------------ Delete Event ------------------ */
       if (deleteBtn) {
-        deleteBtn.addEventListener('click', function () {
+        deleteBtn.addEventListener('click', function() {
           const id = document.getElementById('eventId').value;
           if (!id) return;
           if (confirm("Are you sure you want to delete this event?")) {
             axios.post('delete_event.php', {
-              id
-            })
+                id
+              })
               .then(() => {
                 calendar.refetchEvents();
                 showToast('Event deleted.', 'success');
@@ -2709,7 +2686,7 @@ if ($user_rjcode) {
       document.getElementById('reminderCloseBtn').addEventListener('click', closeReminder);
       document.getElementById('reminderdontshowBtn').addEventListener('click', dontShowReminder);
       document.querySelectorAll(".cancel-invite-btn").forEach(btn => {
-        btn.addEventListener("click", async function () {
+        btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
 
           if (!confirm("Are you sure you want to cancel this invitation?")) return;
@@ -2743,7 +2720,7 @@ if ($user_rjcode) {
 
       // Handle Accept / Reject actions
       document.querySelectorAll(".invite-action-btn").forEach(btn => {
-        btn.addEventListener("click", async function () {
+        btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
 
@@ -2776,7 +2753,7 @@ if ($user_rjcode) {
         });
       });
 
-      document.getElementById("leaveBtn").addEventListener("click", function (e) {
+      document.getElementById("leaveBtn").addEventListener("click", function(e) {
         e.preventDefault();
         if (!currentEvent) {
           showToast("No event selected.", "error");
@@ -2784,14 +2761,14 @@ if ($user_rjcode) {
         }
         if (confirm("Are you sure you want to leave this event?")) {
           fetch("leave_event.php", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              event_id: currentEvent.id
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                event_id: currentEvent.id
+              })
             })
-          })
             .then(res => res.json())
             .then(data => {
               if (data.success) {
