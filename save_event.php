@@ -71,7 +71,7 @@ try {
                     INSERT INTO event_invitations (event_id, inviter_rjcode, invitee_rjcode, status) 
                     VALUES (?, ?, ?, 'pending')
                 ");
-                    $stmt->execute([$eventId, $creator['rjcode'], $code]);
+                    $stmt->execute([$eventId, $_SESSION['user_rjcode'], $code]);
                 }
             }
         }
@@ -126,7 +126,7 @@ try {
                     INSERT INTO event_invitations (event_id, inviter_rjcode, invitee_rjcode, status) 
                     VALUES (?, ?, ?, 'pending')
                 ");
-                    $stmt->execute([$eventId, $creator['rjcode'], $code]);
+                    $stmt->execute([$eventId, $_SESSION['user_rjcode'], $code]);
                 }
             }
         }
