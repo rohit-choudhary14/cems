@@ -1,10 +1,9 @@
 <?php
-$host = 'localhost';      // e.g. localhost
-$port = '5432';           // default PostgreSQL port
-$dbname = 'cems';  // your database name
-$user = 'postgres';  // your DB username
-$password = '1234'; // your DB password
-
+$host = 'localhost';
+$port = '5432';           
+$dbname = 'cems';  
+$user = 'postgres'; 
+$password = '1234'; 
 try {
     $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;";
     $pdo = new PDO($dsn, $user, $password);

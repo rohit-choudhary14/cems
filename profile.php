@@ -2,7 +2,7 @@
 session_start();
 include "db.php";
 if (!isset($_SESSION['user_rjcode'])) {
-  header("Location: index.php");
+  header("Location: http://10.130.8.68/intrahc/");
   exit;
 }
 $user_rjcode = $_SESSION['user_rjcode'];
@@ -83,7 +83,7 @@ if ($user_rjcode) {
       margin-top: 85px;
       border-radius: 12px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      padding:15px;
+      padding: 15px;
     }
 
     #calendar {
@@ -1118,7 +1118,7 @@ if ($user_rjcode) {
     #holidayList {
       display: grid;
       gap: 10px;
-    
+
       color: red;
     }
 
@@ -1128,6 +1128,10 @@ if ($user_rjcode) {
       padding: 8px;
       border-radius: 4px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    #tag-container {
+      position: relative;
     }
   </style>
 
@@ -1658,12 +1662,24 @@ if ($user_rjcode) {
           </label>
           <input type="datetime-local" id="end" class="form-control" required>
         </div>
-        <div class="mb-3">
+        <!-- <div class="mb-3">
           <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
           <input type="text" id="invited_users" name="invited_users" class="form-control"
             placeholder="Enter rjcodes separated by commas">
-          <small class="form-text text-muted">Example: RJ1001, RJ1002, RJ1003</small>
+        </div> -->
+        <div class="mb-3" style="position: relative;">
+          <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
+
+          <div id="tag-container" class="form-control d-flex flex-wrap" style="min-height: 42px; position: relative;">
+            <input type="text" id="user-search" class="border-0 flex-grow-1" placeholder="Type rjcode..." autocomplete="off">
+          </div>
+
+          <input type="hidden" name="invited_users" id="invited_users">
+
+          <ul id="user-suggestions" class="list-group position-absolute" style="top: 100%; left: 0; right: 0; z-index: 1000; display: none;"></ul>
         </div>
+
+
         <div class="mb-3">
           <label class="form-label" for="priority">
             <i class="bi bi-exclamation-circle-fill me-2"></i>Priority
@@ -1738,6 +1754,83 @@ if ($user_rjcode) {
     </div>
   </div>
   <div class="notification-container" id="notification-container"></div>
+  <script>
+    $(document).ready(function() {
+      let selectedUsers = [];
+
+      function renderTags() {
+        const container = $('#tag-container');
+        container.find('.tag').remove();
+        selectedUsers.forEach(user => {
+          $('<span class="badge bg-primary me-1 mb-1 tag">')
+            .text(user.rjcode)
+            .append(
+              $('<span class="ms-1" style="cursor:pointer;">&times;</span>')
+              .click(() => {
+                selectedUsers = selectedUsers.filter(u => u.rjcode !== user.rjcode);
+                renderTags();
+              })
+            )
+            .insertBefore('#user-search');
+        });
+        $('#invited_users').val(selectedUsers.map(u => u.rjcode).join(','));
+      }
+
+      $('#user-search').on('input', function() {
+        const query = $(this).val();
+        if (query.length < 2) {
+          $('#user-suggestions').hide();
+          return;
+        }
+
+        $.ajax({
+          url: 'searchUsers.php',
+          method: 'GET',
+          dataType: 'json',
+          data: {
+            q: query
+          },
+          success: function(data) {
+            if (!Array.isArray(data)) {
+              console.error("Response is not an array:", data);
+              return;
+            }
+
+            const suggestions = $('#user-suggestions');
+            suggestions.empty().show();
+            console.log(suggestions)
+            if (data.length === 0) {
+              suggestions.append('<li class="list-group-item text-muted">No results</li>');
+            } else {
+              data.forEach(user => {
+                if (selectedUsers.some(u => u.rjcode === user.rjcode)) return;
+
+                const item = $('<li class="list-group-item list-group-item-action">').text(user.rjcode);
+                item.click(function() {
+                  selectedUsers.push(user);
+                  renderTags();
+                  $('#user-search').val('');
+                  suggestions.hide();
+                });
+                suggestions.append(item);
+              });
+            }
+          }
+
+        });
+      });
+
+      // Hide suggestions when clicking outside
+      $(document).click(function(e) {
+        if (!$(e.target).closest('#tag-container, #user-suggestions').length) {
+          $('#user-suggestions').hide();
+        }
+      });
+    });
+  </script>
+
+
+
   <script>
     const bell = document.getElementById("notificationBell");
     const panel = document.getElementById("notificationPanel");
@@ -1821,21 +1914,47 @@ if ($user_rjcode) {
       let holidayMap = {};
 
       function renderHolidayList(holidayListNameForRhcJaipur) {
+        let filteredHolidays = holidayListNameForRhcJaipur.filter(holiday =>
+          holiday.holiday_name !== "Sunday" &&
+          holiday.holiday_name !== "Second Saturday" &&
+          holiday.holiday_name !== "Fourth Saturday"
+        );
+        filteredHolidays.sort((a, b) => new Date(a.leave_date) - new Date(b.leave_date));
         let html = "";
-        holidayListNameForRhcJaipur.sort((a, b) => {
-          return new Date(a.leave_date) - new Date(b.leave_date);
-        });
-        for (let i = 0; i < holidayListNameForRhcJaipur.length; i++) {
-          let holiday = holidayListNameForRhcJaipur[i];
-          console.log(holiday.holiday_name)
-          if(holiday.holiday_name!=="Sunday" && holiday.holiday_name!=="Second Saturday" &&holiday.holiday_name!=="Fourth Saturday" ){
-              let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
-              html += `<div>${label}</div>`;
+        let grouped = [];
+        for (let i = 0; i < filteredHolidays.length; i++) {
+          let current = filteredHolidays[i];
+          let currentDate = new Date(current.leave_date);
+          let currentName = current.holiday_name;
+          let startDate = currentDate;
+          let endDate = currentDate;
+          while (i + 1 < filteredHolidays.length) {
+            let next = filteredHolidays[i + 1];
+            let nextDate = new Date(next.leave_date);
+            let nextName = next.holiday_name;
+            if (nextName === currentName && (nextDate - endDate) === 86400000) {
+              endDate = nextDate;
+              i++;
+            } else {
+              break;
+            }
+          }
+          let options = {
+            day: 'numeric',
+            month: 'short'
+          };
+          let startStr = startDate.toLocaleDateString(undefined, options);
+          let endStr = endDate.toLocaleDateString(undefined, options);
+
+          if (startStr === endStr) {
+            html += `<div><strong>${startStr}:</strong> ${currentName}</div>`;
+          } else {
+            html += `<div><strong>${startStr} - ${endStr}:</strong> ${currentName}</div>`;
           }
         }
-
         $("#holidayList").html(html);
       }
+
 
 
       function fetchHolidays(year, month) {
@@ -2295,7 +2414,6 @@ if ($user_rjcode) {
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
           } else {
-            console.log(event.extendedProps.invitees)
             document.getElementById('invited_users').value = "";
           }
           new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
