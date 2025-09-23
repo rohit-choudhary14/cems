@@ -1130,8 +1130,74 @@ if ($user_rjcode) {
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    #tag-container {
+    /* Container for tag input and suggestions */
+    .invite-wrapper {
       position: relative;
+    }
+
+    /* Tag container style */
+    #tag-container {
+      min-height: 42px;
+      padding: 0.375rem 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      align-items: center;
+      cursor: text;
+    }
+
+    /* Input inside tag container */
+    .user-search-input {
+      border: none;
+      flex-grow: 1;
+      min-width: 120px;
+      outline: none;
+      padding: 0.25rem 0;
+      font-size: 1rem;
+    }
+
+    /* Suggestion dropdown */
+    .user-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1050;
+      display: none;
+      /* JS will toggle this */
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: #fff;
+      border: 1px solid #ced4da;
+      border-top: none;
+      border-radius: 0 0 0.375rem 0.375rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Each suggestion item */
+    .user-suggestions .list-group-item {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .user-suggestions .list-group-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 576px) {
+      #tag-container {
+        padding: 0.5rem;
+      }
+
+      .user-search-input {
+        font-size: 0.95rem;
+      }
+
+      .user-suggestions {
+        font-size: 0.95rem;
+        max-height: 160px;
+      }
     }
   </style>
 
@@ -1662,12 +1728,24 @@ if ($user_rjcode) {
           </label>
           <input type="datetime-local" id="end" class="form-control" required>
         </div>
-        <!-- <div class="mb-3">
+        <div class="mb-3 invite-wrapper">
           <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
-          <input type="text" id="invited_users" name="invited_users" class="form-control"
-            placeholder="Enter rjcodes separated by commas">
-        </div> -->
-        <div class="mb-3" style="position: relative;">
+
+          <div id="tag-container" class="form-control d-flex flex-wrap align-items-center">
+            <input
+              type="text"
+              id="user-search"
+              class="user-search-input"
+              placeholder="Type rjcode..."
+              autocomplete="off" />
+          </div>
+
+          <input type="hidden" name="invited_users" id="invited_users">
+
+          <ul id="user-suggestions" class="list-group user-suggestions"></ul>
+        </div>
+
+        <!-- <div class="mb-3" style="position: relative;">
           <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
 
           <div id="tag-container" class="form-control d-flex flex-wrap" style="min-height: 42px; position: relative;">
@@ -1676,8 +1754,10 @@ if ($user_rjcode) {
 
           <input type="hidden" name="invited_users" id="invited_users">
 
-          <ul id="user-suggestions" class="list-group position-absolute" style="top: 100%; left: 0; right: 0; z-index: 1000; display: none;"></ul>
-        </div>
+          <ul id="user-suggestions" class="list-group position-absolute"
+            style="top: 100%; left: 0; right: 0; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
+          </ul>
+        </div> -->
 
 
         <div class="mb-3">
@@ -2180,6 +2260,25 @@ if ($user_rjcode) {
         medium: "#ffc107",
         high: "#dc3545"
       };
+
+
+      function showSelectedTags(selectedUsers) {
+        console.log(selectedUsers)
+        const container = $('#tag-container');
+        container.find('.tag').remove();
+        selectedUsers.forEach(user => {
+          $('<span class="badge bg-primary me-1 mb-1 tag">')
+            .text(user)
+            .append(
+              $('<span class="ms-1" style="cursor:pointer;">&times;</span>')
+              .click(() => {
+                selectedUsers = selectedUsers.filter(u => u.rjcode !== user.rjcode);
+                showSelectedTags();
+              })
+            )
+            .insertBefore('#user-search');
+        });
+      }
       /* ------------------ Main Calendar ------------------ */
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'listYear',
@@ -2413,6 +2512,7 @@ if ($user_rjcode) {
 
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
+            showSelectedTags( event.extendedProps.invitees);
           } else {
             document.getElementById('invited_users').value = "";
           }
