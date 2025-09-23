@@ -1276,8 +1276,8 @@ if ($user_rjcode) {
                         <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                         <div class="notif-actions">
                           <?php if ($n['status'] === 'pending'): ?>
-                            <button class="btn btn-sm btn-success">Accept</button>
-                            <button class="btn btn-sm btn-outline-danger">Reject</button>
+                            <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>">Accept</button>
+                            <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>">Reject</button>
                           <?php else: ?>
                             <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                           <?php endif; ?>
@@ -1291,7 +1291,7 @@ if ($user_rjcode) {
                         <div class="notif-actions">
                           <?php if ($note['status'] === 'pending'): ?>
                             <span class="badge bg-warning text-dark">Pending</span>
-                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                            <button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                           <?php elseif ($note['status'] === 'accepted'): ?>
                             <span class="badge bg-success">Accepted</span>
                           <?php else: ?>
@@ -1414,8 +1414,8 @@ if ($user_rjcode) {
                 <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                 <div class="notif-actions">
                   <?php if ($n['status'] === 'pending'): ?>
-                    <button class="btn btn-sm btn-success">Accept</button>
-                    <button class="btn btn-sm btn-outline-danger">Reject</button>
+                    <button class="btn btn-sm btn-success invite-action-btn"  data-id="<?= $n['id'] ?>">Accept</button>
+                    <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>">Reject</button>
                   <?php else: ?>
                     <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                   <?php endif; ?>
@@ -1429,7 +1429,7 @@ if ($user_rjcode) {
                 <div class="notif-actions">
                   <?php if ($note['status'] === 'pending'): ?>
                     <span class="badge bg-warning text-dark">Pending</span>
-                    <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                    <button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                   <?php elseif ($note['status'] === 'accepted'): ?>
                     <span class="badge bg-success">Accepted</span>
                   <?php else: ?>
@@ -1505,8 +1505,8 @@ if ($user_rjcode) {
               <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
               <div class="notif-actions">
                 <?php if ($n['status'] === 'pending'): ?>
-                  <button class="btn btn-sm btn-success">Accept</button>
-                  <button class="btn btn-sm btn-outline-danger">Reject</button>
+                  <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>">Accept</button>
+                  <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>">Reject</button>
                 <?php else: ?>
                   <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                 <?php endif; ?>
@@ -1520,7 +1520,7 @@ if ($user_rjcode) {
               <div class="notif-actions">
                 <?php if ($note['status'] === 'pending'): ?>
                   <span class="badge bg-warning text-dark">Pending</span>
-                  <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                  <button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                 <?php elseif ($note['status'] === 'accepted'): ?>
                   <span class="badge bg-success">Accepted</span>
                 <?php else: ?>
@@ -1730,7 +1730,9 @@ if ($user_rjcode) {
         </div>
         <div class="mb-3 invite-wrapper">
           <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
+          <div id="selected-user-tag-container">
 
+          </div>
           <div id="tag-container" class="form-control d-flex flex-wrap align-items-center">
             <input
               type="text"
@@ -1744,20 +1746,6 @@ if ($user_rjcode) {
 
           <ul id="user-suggestions" class="list-group user-suggestions"></ul>
         </div>
-
-        <!-- <div class="mb-3" style="position: relative;">
-          <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
-
-          <div id="tag-container" class="form-control d-flex flex-wrap" style="min-height: 42px; position: relative;">
-            <input type="text" id="user-search" class="border-0 flex-grow-1" placeholder="Type rjcode..." autocomplete="off">
-          </div>
-
-          <input type="hidden" name="invited_users" id="invited_users">
-
-          <ul id="user-suggestions" class="list-group position-absolute"
-            style="top: 100%; left: 0; right: 0; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
-          </ul>
-        </div> -->
 
 
         <div class="mb-3">
@@ -2263,22 +2251,17 @@ if ($user_rjcode) {
 
 
       function showSelectedTags(selectedUsers) {
-        console.log(selectedUsers)
-        const container = $('#tag-container');
+        console.log(selectedUsers);
+        const container = $('#selected-user-tag-container');
         container.find('.tag').remove();
+
         selectedUsers.forEach(user => {
-          $('<span class="badge bg-primary me-1 mb-1 tag">')
+          $('<span class="badge bg-dark me-1 mb-1 tag">')
             .text(user)
-            .append(
-              $('<span class="ms-1" style="cursor:pointer;">&times;</span>')
-              .click(() => {
-                selectedUsers = selectedUsers.filter(u => u.rjcode !== user.rjcode);
-                showSelectedTags();
-              })
-            )
-            .insertBefore('#user-search');
+            .appendTo(container); // append each tag to the container
         });
       }
+
       /* ------------------ Main Calendar ------------------ */
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'listYear',
@@ -2451,6 +2434,8 @@ if ($user_rjcode) {
           }
         },
         dateClick: function(info) {
+          const container = $('#tag-container');
+          container.find('.tag').remove();
           document.getElementById('eventForm').reset();
           document.getElementById('eventId').value = "";
           document.getElementById('start').value = info.dateStr.slice(0, 16);
@@ -2512,7 +2497,7 @@ if ($user_rjcode) {
 
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
-            showSelectedTags( event.extendedProps.invitees);
+            showSelectedTags(event.extendedProps.invitees);
           } else {
             document.getElementById('invited_users').value = "";
           }
@@ -2801,7 +2786,8 @@ if ($user_rjcode) {
 
       /* ------------------ Form & Buttons ------------------ */
       document.getElementById('newEventBtn').addEventListener('click', () => {
-
+        const container = $('#tag-container');
+        container.find('.tag').remove();
         document.getElementById('eventForm').reset();
         document.getElementById('eventId').value = "";
         document.getElementById('priority').value = "low";
@@ -2811,6 +2797,8 @@ if ($user_rjcode) {
 
       /* ------------------ Form & Buttons ------------------ */
       document.getElementById('newEventBtnMb').addEventListener('click', () => {
+        const container = $('#tag-container');
+        container.find('.tag').remove();
         document.getElementById('eventForm').reset();
         document.getElementById('eventId').value = "";
         document.getElementById('priority').value = "low";
@@ -2904,7 +2892,6 @@ if ($user_rjcode) {
           const inviteId = this.dataset.id;
 
           if (!confirm("Are you sure you want to cancel this invitation?")) return;
-
           try {
             const res = await fetch("cancel_invitation.php", {
               method: "POST",
@@ -2917,15 +2904,14 @@ if ($user_rjcode) {
             });
 
             const data = await res.json();
-
             if (data.success) {
               showToast('Invitation cancelled successfully!', 'success');
-
-              this.closest("li").remove();
+                this.closest(".notif-card").remove();
             } else {
               showToast(data.message, 'error');
             }
           } catch (err) {
+            console.log(err)
             showToast("Request failed. Try again later.", 'error');
           }
         });
@@ -2937,7 +2923,6 @@ if ($user_rjcode) {
         btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
-
           try {
             const res = await fetch("invite_action.php", {
               method: "POST",
@@ -2954,7 +2939,7 @@ if ($user_rjcode) {
 
             if (data.success) {
               // Update UI with new status
-              const container = this.closest("div");
+              const container = this.closest(".notif-actions");
               container.innerHTML = `<span class="badge bg-${action === 'accept' ? 'success' : 'danger'}">
                                   ${action.charAt(0).toUpperCase() + action.slice(1)}ed
                                 </span>`;
