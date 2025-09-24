@@ -1207,6 +1207,7 @@ if ($user_rjcode) {
 
   <nav class="navbar navbar-expand-lg navbar-dark d-lg-flex" style="background:#022f66">
     <div class="container-fluid">
+      <img src="./images/logo.png" style="height:50px"/>
       <a class="navbar-brand" href="#" style="color:white">Rajasthan High Court CEMS</a>
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="d-flex flex-grow-1 justify-content-center my-2 my-lg-0">
