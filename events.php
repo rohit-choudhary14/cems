@@ -24,7 +24,7 @@ $query ="
   FROM events e
   LEFT JOIN event_invitations ei 
          ON e.id = ei.event_id 
-        AND ei.status IN ('accepted', 'pending')  
+        AND ei.status IN ('accepted')  
   WHERE e.user_id = :uid
   GROUP BY e.id, e.title, e.start_date, e.end_date, e.description, 
            e.priority, e.user_id, e.reminder_before, e.repeat_frequency, e.is_repeating
@@ -46,10 +46,10 @@ $query ="
   FROM events e
   JOIN event_invitations ei 
        ON e.id = ei.event_id 
-      AND ei.status IN ('accepted', 'pending') 
+      AND ei.status IN ('accepted') 
   LEFT JOIN event_invitations ei2 
        ON e.id = ei2.event_id 
-      AND ei2.status IN ('accepted', 'pending') 
+      AND ei2.status IN ('accepted') 
   WHERE ei.invitee_rjcode = :uid
   GROUP BY e.id, e.title, e.start_date, e.end_date, e.description, 
            e.priority, e.user_id, e.reminder_before, e.repeat_frequency, e.is_repeating

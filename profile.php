@@ -1276,8 +1276,8 @@ if ($user_rjcode) {
                         <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                         <div class="notif-actions">
                           <?php if ($n['status'] === 'pending'): ?>
-                            <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>">Accept</button>
-                            <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>">Reject</button>
+                            <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="accept">Accept</button>
+                            <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="reject">Reject</button>
                           <?php else: ?>
                             <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                           <?php endif; ?>
@@ -1414,8 +1414,8 @@ if ($user_rjcode) {
                 <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                 <div class="notif-actions">
                   <?php if ($n['status'] === 'pending'): ?>
-                    <button class="btn btn-sm btn-success invite-action-btn"  data-id="<?= $n['id'] ?>">Accept</button>
-                    <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>">Reject</button>
+                    <button class="btn btn-sm btn-success invite-action-btn"  data-id="<?= $n['id'] ?>"  data-action="accept">Accept</button>
+                    <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="reject">Reject</button>
                   <?php else: ?>
                     <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                   <?php endif; ?>
@@ -1505,8 +1505,8 @@ if ($user_rjcode) {
               <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
               <div class="notif-actions">
                 <?php if ($n['status'] === 'pending'): ?>
-                  <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>">Accept</button>
-                  <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>">Reject</button>
+                  <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="accept">Accept</button>
+                  <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="reject">Reject</button>
                 <?php else: ?>
                   <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                 <?php endif; ?>
@@ -2923,6 +2923,7 @@ if ($user_rjcode) {
         btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
+          console.log(action)
           try {
             const res = await fetch("invite_action.php", {
               method: "POST",
