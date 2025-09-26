@@ -12,7 +12,7 @@ if (strlen($q) < 2) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT username AS rjcode FROM intra_users WHERE username LIKE ? LIMIT 10");
+$stmt = $pdo->prepare("SELECT username AS rjcode,display_name FROM intra_users WHERE username LIKE ? LIMIT 10");
 
 $searchTerm = "%$q%";
 $stmt->execute([$searchTerm]);

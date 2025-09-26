@@ -1207,8 +1207,10 @@ if ($user_rjcode) {
 
   <nav class="navbar navbar-expand-lg navbar-dark d-lg-flex" style="background:#022f66">
     <div class="container-fluid">
-      <img src="./images/logo.png" style="height:50px"/>
-      <a class="navbar-brand" href="#" style="color:white">Rajasthan High Court CEMS</a>
+
+      <img src="<?= $_SESSION['program_icon'] ?>" style="height:50px" />
+
+      <a class="navbar-brand" href="#" style="color:white;margin-left:20px"><?= $_SESSION['program_name'] ?></a>
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="d-flex flex-grow-1 justify-content-center my-2 my-lg-0">
           <button class="btn btn-light" id="newEventBtn">+ New Event</button>
@@ -1277,8 +1279,8 @@ if ($user_rjcode) {
                         <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                         <div class="notif-actions">
                           <?php if ($n['status'] === 'pending'): ?>
-                            <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="accept">Accept</button>
-                            <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="reject">Reject</button>
+                            <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>" data-action="accept">Accept</button>
+                            <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>" data-action="reject">Reject</button>
                           <?php else: ?>
                             <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                           <?php endif; ?>
@@ -1291,8 +1293,8 @@ if ($user_rjcode) {
                         <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
                         <div class="notif-actions">
                           <?php if ($note['status'] === 'pending'): ?>
-                            <span class="badge bg-warning text-dark">Pending</span>
-                            <button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
+                            <button class="badge btn btn-sm  btn-warning text-white">Pending</button>
+                            <button class="btn btn-sm btn-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                           <?php elseif ($note['status'] === 'accepted'): ?>
                             <span class="badge bg-success">Accepted</span>
                           <?php else: ?>
@@ -1415,8 +1417,8 @@ if ($user_rjcode) {
                 <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                 <div class="notif-actions">
                   <?php if ($n['status'] === 'pending'): ?>
-                    <button class="btn btn-sm btn-success invite-action-btn"  data-id="<?= $n['id'] ?>"  data-action="accept">Accept</button>
-                    <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="reject">Reject</button>
+                    <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>" data-action="accept">Accept</button>
+                    <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>" data-action="reject">Reject</button>
                   <?php else: ?>
                     <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                   <?php endif; ?>
@@ -1429,8 +1431,8 @@ if ($user_rjcode) {
                 <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
                 <div class="notif-actions">
                   <?php if ($note['status'] === 'pending'): ?>
-                    <span class="badge bg-warning text-dark">Pending</span>
-                    <button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
+                    <button class="badge btn btn-sm  btn-warning text-white">Pending</button>
+                    <button class="btn btn-sm btn-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                   <?php elseif ($note['status'] === 'accepted'): ?>
                     <span class="badge bg-success">Accepted</span>
                   <?php else: ?>
@@ -1506,8 +1508,8 @@ if ($user_rjcode) {
               <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
               <div class="notif-actions">
                 <?php if ($n['status'] === 'pending'): ?>
-                  <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="accept">Accept</button>
-                  <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>"  data-action="reject">Reject</button>
+                  <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>" data-action="accept">Accept</button>
+                  <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>" data-action="reject">Reject</button>
                 <?php else: ?>
                   <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                 <?php endif; ?>
@@ -1873,8 +1875,7 @@ if ($user_rjcode) {
             } else {
               data.forEach(user => {
                 if (selectedUsers.some(u => u.rjcode === user.rjcode)) return;
-
-                const item = $('<li class="list-group-item list-group-item-action">').text(user.rjcode);
+                const item = $('<li class="list-group-item list-group-item-action">').text(user.rjcode+"-"+user.display_name);
                 item.click(function() {
                   selectedUsers.push(user);
                   renderTags();
@@ -2907,7 +2908,7 @@ if ($user_rjcode) {
             const data = await res.json();
             if (data.success) {
               showToast('Invitation cancelled successfully!', 'success');
-                this.closest(".notif-card").remove();
+              this.closest(".notif-card").remove();
             } else {
               showToast(data.message, 'error');
             }
