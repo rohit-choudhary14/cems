@@ -1208,7 +1208,7 @@ if ($user_rjcode) {
   <nav class="navbar navbar-expand-lg navbar-dark d-lg-flex" style="background:#022f66">
     <div class="container-fluid">
 
-      <img src="<?= $_SESSION['program_icon'] ?>" style="height:50px" />
+      <img src="./images/logo.png" style="height:50px" />
 
       <a class="navbar-brand" href="#" style="color:white;margin-left:20px"><?= $_SESSION['program_name'] ?></a>
       <div class="collapse navbar-collapse" id="navbarContent">
@@ -1875,7 +1875,7 @@ if ($user_rjcode) {
             } else {
               data.forEach(user => {
                 if (selectedUsers.some(u => u.rjcode === user.rjcode)) return;
-                const item = $('<li class="list-group-item list-group-item-action">').text(user.rjcode+"-"+user.display_name);
+                const item = $('<li class="list-group-item list-group-item-action">').text(user.rjcode + "-" + user.display_name);
                 item.click(function() {
                   selectedUsers.push(user);
                   renderTags();
@@ -2114,8 +2114,8 @@ if ($user_rjcode) {
               holidayMap[dateStr].forEach(holiday => {
                 if (addedRHClass) return;
                 const leaveType = holiday.leave_type;
-                let courts = holiday.court.split(",");
-                if (courts[0] === "HC_JAI") {
+                let courts = holiday?.court?.split(",");
+                if (courts && courts.length > 0 && courts[0] === "HC_JAI") {
                   if (leaveType === "RH") {
                     classes += " date-number-rh";
                     addedRHClass = true;
