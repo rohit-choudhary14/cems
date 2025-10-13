@@ -14,17 +14,7 @@ if (empty($data['id'])) {
     exit;
 }
 
-// Get current user ID from rj_code
-$stmt = $pdo->prepare("SELECT rjcode FROM users WHERE rjcode = ?");
-$stmt->execute([$_SESSION['user_rjcode']]);
-$currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$currentUser) {
-    echo json_encode(["success" => false, "message" => "User not found"]);
-    exit;
-}
-
-$user_id = $currentUser['rjcode'];
+$user_id = $_SESSION['user_rjcode'];
 
 $stmt = $pdo->prepare("SELECT created_by FROM events WHERE id = ?");
 $stmt->execute([$data['id']]);

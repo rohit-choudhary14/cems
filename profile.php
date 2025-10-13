@@ -579,13 +579,6 @@ if ($user_rjcode) {
     }
   </style>
   <style>
-    .fc-col-header-cell:first-child .fc-col-header-cell-cushion {
-      color: red !important;
-      font-weight: 700 !important;
-    }
-
-
-
     .flatpickr-weekdays div :first-child {
       border: solid 1px red;
     }
@@ -1834,8 +1827,11 @@ if ($user_rjcode) {
         });
         for (let i = 0; i < holidayListNameForRhcJaipur.length; i++) {
           let holiday = holidayListNameForRhcJaipur[i];
-          let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
-          html += `<div>${label}</div>`;
+          console.log(holiday.holiday_name)
+          if(holiday.holiday_name!=="Sunday" && holiday.holiday_name!=="Second Saturday" &&holiday.holiday_name!=="Fourth Saturday" ){
+              let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
+              html += `<div>${label}</div>`;
+          }
         }
 
         $("#holidayList").html(html);
