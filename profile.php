@@ -2,7 +2,7 @@
 session_start();
 include "db.php";
 if (!isset($_SESSION['user_rjcode'])) {
-  header("Location: index.php");
+  header("Location: http://10.130.8.68/intrahc/");
   exit;
 }
 $user_rjcode = $_SESSION['user_rjcode'];
@@ -83,7 +83,7 @@ if ($user_rjcode) {
       margin-top: 85px;
       border-radius: 12px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      padding:15px;
+      padding: 15px;
     }
 
     #calendar {
@@ -1118,7 +1118,7 @@ if ($user_rjcode) {
     #holidayList {
       display: grid;
       gap: 10px;
-    
+
       color: red;
     }
 
@@ -1129,6 +1129,76 @@ if ($user_rjcode) {
       border-radius: 4px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
+
+    /* Container for tag input and suggestions */
+    .invite-wrapper {
+      position: relative;
+    }
+
+    /* Tag container style */
+    #tag-container {
+      min-height: 42px;
+      padding: 0.375rem 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      align-items: center;
+      cursor: text;
+    }
+
+    /* Input inside tag container */
+    .user-search-input {
+      border: none;
+      flex-grow: 1;
+      min-width: 120px;
+      outline: none;
+      padding: 0.25rem 0;
+      font-size: 1rem;
+    }
+
+    /* Suggestion dropdown */
+    .user-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1050;
+      display: none;
+      /* JS will toggle this */
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: #fff;
+      border: 1px solid #ced4da;
+      border-top: none;
+      border-radius: 0 0 0.375rem 0.375rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Each suggestion item */
+    .user-suggestions .list-group-item {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .user-suggestions .list-group-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 576px) {
+      #tag-container {
+        padding: 0.5rem;
+      }
+
+      .user-search-input {
+        font-size: 0.95rem;
+      }
+
+      .user-suggestions {
+        font-size: 0.95rem;
+        max-height: 160px;
+      }
+    }
   </style>
 
 </head>
@@ -1137,7 +1207,10 @@ if ($user_rjcode) {
 
   <nav class="navbar navbar-expand-lg navbar-dark d-lg-flex" style="background:#022f66">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#" style="color:white">Rajasthan High Court CEMS</a>
+
+      <img src="./images/logo.png" style="height:50px" />
+
+      <a class="navbar-brand" href="#" style="color:white;margin-left:20px"><?= $_SESSION['program_name'] ?></a>
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="d-flex flex-grow-1 justify-content-center my-2 my-lg-0">
           <button class="btn btn-light" id="newEventBtn">+ New Event</button>
@@ -1206,8 +1279,8 @@ if ($user_rjcode) {
                         <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                         <div class="notif-actions">
                           <?php if ($n['status'] === 'pending'): ?>
-                            <button class="btn btn-sm btn-success">Accept</button>
-                            <button class="btn btn-sm btn-outline-danger">Reject</button>
+                            <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>" data-action="accept">Accept</button>
+                            <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>" data-action="reject">Reject</button>
                           <?php else: ?>
                             <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                           <?php endif; ?>
@@ -1220,8 +1293,8 @@ if ($user_rjcode) {
                         <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
                         <div class="notif-actions">
                           <?php if ($note['status'] === 'pending'): ?>
-                            <span class="badge bg-warning text-dark">Pending</span>
-                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                            <button class="badge btn btn-sm  btn-warning text-white">Pending</button>
+                            <button class="btn btn-sm btn-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                           <?php elseif ($note['status'] === 'accepted'): ?>
                             <span class="badge bg-success">Accepted</span>
                           <?php else: ?>
@@ -1344,8 +1417,8 @@ if ($user_rjcode) {
                 <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
                 <div class="notif-actions">
                   <?php if ($n['status'] === 'pending'): ?>
-                    <button class="btn btn-sm btn-success">Accept</button>
-                    <button class="btn btn-sm btn-outline-danger">Reject</button>
+                    <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>" data-action="accept">Accept</button>
+                    <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>" data-action="reject">Reject</button>
                   <?php else: ?>
                     <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                   <?php endif; ?>
@@ -1358,8 +1431,8 @@ if ($user_rjcode) {
                 <div class="notif-body">Event: <em><?= htmlspecialchars($note['event_title']) ?></em></div>
                 <div class="notif-actions">
                   <?php if ($note['status'] === 'pending'): ?>
-                    <span class="badge bg-warning text-dark">Pending</span>
-                    <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                    <button class="badge btn btn-sm  btn-warning text-white">Pending</button>
+                    <button class="btn btn-sm btn-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                   <?php elseif ($note['status'] === 'accepted'): ?>
                     <span class="badge bg-success">Accepted</span>
                   <?php else: ?>
@@ -1435,8 +1508,8 @@ if ($user_rjcode) {
               <div class="notif-body">Event: <em><?= htmlspecialchars($n['title']) ?></em></div>
               <div class="notif-actions">
                 <?php if ($n['status'] === 'pending'): ?>
-                  <button class="btn btn-sm btn-success">Accept</button>
-                  <button class="btn btn-sm btn-outline-danger">Reject</button>
+                  <button class="btn btn-sm btn-success invite-action-btn" data-id="<?= $n['id'] ?>" data-action="accept">Accept</button>
+                  <button class="btn btn-sm btn-outline-danger invite-action-btn" data-id="<?= $n['id'] ?>" data-action="reject">Reject</button>
                 <?php else: ?>
                   <span class="badge bg-secondary"><?= ucfirst($n['status']) ?></span>
                 <?php endif; ?>
@@ -1450,7 +1523,7 @@ if ($user_rjcode) {
               <div class="notif-actions">
                 <?php if ($note['status'] === 'pending'): ?>
                   <span class="badge bg-warning text-dark">Pending</span>
-                  <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                  <button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-id="<?= $note['id'] ?>">Cancel</button>
                 <?php elseif ($note['status'] === 'accepted'): ?>
                   <span class="badge bg-success">Accepted</span>
                 <?php else: ?>
@@ -1658,12 +1731,26 @@ if ($user_rjcode) {
           </label>
           <input type="datetime-local" id="end" class="form-control" required>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 invite-wrapper">
           <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
-          <input type="text" id="invited_users" name="invited_users" class="form-control"
-            placeholder="Enter rjcodes separated by commas">
-          <small class="form-text text-muted">Example: RJ1001, RJ1002, RJ1003</small>
+          <div id="selected-user-tag-container">
+
+          </div>
+          <div id="tag-container" class="form-control d-flex flex-wrap align-items-center">
+            <input
+              type="text"
+              id="user-search"
+              class="user-search-input"
+              placeholder="Type rjcode..."
+              autocomplete="off" />
+          </div>
+
+          <input type="hidden" name="invited_users" id="invited_users">
+
+          <ul id="user-suggestions" class="list-group user-suggestions"></ul>
         </div>
+
+
         <div class="mb-3">
           <label class="form-label" for="priority">
             <i class="bi bi-exclamation-circle-fill me-2"></i>Priority
@@ -1738,6 +1825,82 @@ if ($user_rjcode) {
     </div>
   </div>
   <div class="notification-container" id="notification-container"></div>
+  <script>
+    $(document).ready(function() {
+      let selectedUsers = [];
+
+      function renderTags() {
+        const container = $('#tag-container');
+        container.find('.tag').remove();
+        selectedUsers.forEach(user => {
+          $('<span class="badge bg-primary me-1 mb-1 tag">')
+            .text(user.rjcode)
+            .append(
+              $('<span class="ms-1" style="cursor:pointer;">&times;</span>')
+              .click(() => {
+                selectedUsers = selectedUsers.filter(u => u.rjcode !== user.rjcode);
+                renderTags();
+              })
+            )
+            .insertBefore('#user-search');
+        });
+        $('#invited_users').val(selectedUsers.map(u => u.rjcode).join(','));
+      }
+
+      $('#user-search').on('input', function() {
+        const query = $(this).val();
+        if (query.length < 2) {
+          $('#user-suggestions').hide();
+          return;
+        }
+
+        $.ajax({
+          url: 'searchUsers.php',
+          method: 'GET',
+          dataType: 'json',
+          data: {
+            q: query
+          },
+          success: function(data) {
+            if (!Array.isArray(data)) {
+              console.error("Response is not an array:", data);
+              return;
+            }
+
+            const suggestions = $('#user-suggestions');
+            suggestions.empty().show();
+            console.log(suggestions)
+            if (data.length === 0) {
+              suggestions.append('<li class="list-group-item text-muted">No results</li>');
+            } else {
+              data.forEach(user => {
+                if (selectedUsers.some(u => u.rjcode === user.rjcode)) return;
+                const item = $('<li class="list-group-item list-group-item-action">').text(user.rjcode + "-" + user.display_name);
+                item.click(function() {
+                  selectedUsers.push(user);
+                  renderTags();
+                  $('#user-search').val('');
+                  suggestions.hide();
+                });
+                suggestions.append(item);
+              });
+            }
+          }
+
+        });
+      });
+
+      // Hide suggestions when clicking outside
+      $(document).click(function(e) {
+        if (!$(e.target).closest('#tag-container, #user-suggestions').length) {
+          $('#user-suggestions').hide();
+        }
+      });
+    });
+  </script>
+
+
+
   <script>
     const bell = document.getElementById("notificationBell");
     const panel = document.getElementById("notificationPanel");
@@ -1821,21 +1984,25 @@ if ($user_rjcode) {
       let holidayMap = {};
 
       function renderHolidayList(holidayListNameForRhcJaipur) {
+        let filteredHolidays = holidayListNameForRhcJaipur.filter(holiday =>
+          holiday.holiday_name !== "Sunday" &&
+          holiday.holiday_name !== "Second Saturday" &&
+          holiday.holiday_name !== "Fourth Saturday"
+        );
+        filteredHolidays.sort((a, b) => new Date(a.leave_date) - new Date(b.leave_date));
         let html = "";
         holidayListNameForRhcJaipur.sort((a, b) => {
           return new Date(a.leave_date) - new Date(b.leave_date);
         });
         for (let i = 0; i < holidayListNameForRhcJaipur.length; i++) {
           let holiday = holidayListNameForRhcJaipur[i];
-          console.log(holiday.holiday_name)
-          if(holiday.holiday_name!=="Sunday" && holiday.holiday_name!=="Second Saturday" &&holiday.holiday_name!=="Fourth Saturday" ){
-              let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
-              html += `<div>${label}</div>`;
-          }
+          let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
+          html += `<div>${label}</div>`;
         }
 
         $("#holidayList").html(html);
       }
+
 
 
       function fetchHolidays(year, month) {
@@ -1925,8 +2092,8 @@ if ($user_rjcode) {
               holidayMap[dateStr].forEach(holiday => {
                 if (addedRHClass) return;
                 const leaveType = holiday.leave_type;
-                let courts = holiday.court.split(",");
-                if (courts[0] === "HC_JAI") {
+                let courts = holiday?.court?.split(",");
+                if (courts && courts.length > 0 && courts[0] === "HC_JAI") {
                   if (leaveType === "RH") {
                     classes += " date-number-rh";
                     addedRHClass = true;
@@ -2061,6 +2228,20 @@ if ($user_rjcode) {
         medium: "#ffc107",
         high: "#dc3545"
       };
+
+
+      function showSelectedTags(selectedUsers) {
+        console.log(selectedUsers);
+        const container = $('#selected-user-tag-container');
+        container.find('.tag').remove();
+
+        selectedUsers.forEach(user => {
+          $('<span class="badge bg-dark me-1 mb-1 tag">')
+            .text(user)
+            .appendTo(container); // append each tag to the container
+        });
+      }
+
       /* ------------------ Main Calendar ------------------ */
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'listYear',
@@ -2233,6 +2414,8 @@ if ($user_rjcode) {
           }
         },
         dateClick: function(info) {
+          const container = $('#tag-container');
+          container.find('.tag').remove();
           document.getElementById('eventForm').reset();
           document.getElementById('eventId').value = "";
           document.getElementById('start').value = info.dateStr.slice(0, 16);
@@ -2294,8 +2477,8 @@ if ($user_rjcode) {
 
           if (event.extendedProps.invitees && event.extendedProps.invitees.length > 0) {
             document.getElementById('invited_users').value = event.extendedProps.invitees.join(",");
+            showSelectedTags(event.extendedProps.invitees);
           } else {
-            console.log(event.extendedProps.invitees)
             document.getElementById('invited_users').value = "";
           }
           new bootstrap.Offcanvas(document.getElementById('eventOffcanvas')).show();
@@ -2583,7 +2766,8 @@ if ($user_rjcode) {
 
       /* ------------------ Form & Buttons ------------------ */
       document.getElementById('newEventBtn').addEventListener('click', () => {
-
+        const container = $('#tag-container');
+        container.find('.tag').remove();
         document.getElementById('eventForm').reset();
         document.getElementById('eventId').value = "";
         document.getElementById('priority').value = "low";
@@ -2593,6 +2777,8 @@ if ($user_rjcode) {
 
       /* ------------------ Form & Buttons ------------------ */
       document.getElementById('newEventBtnMb').addEventListener('click', () => {
+        const container = $('#tag-container');
+        container.find('.tag').remove();
         document.getElementById('eventForm').reset();
         document.getElementById('eventId').value = "";
         document.getElementById('priority').value = "low";
@@ -2686,7 +2872,6 @@ if ($user_rjcode) {
           const inviteId = this.dataset.id;
 
           if (!confirm("Are you sure you want to cancel this invitation?")) return;
-
           try {
             const res = await fetch("cancel_invitation.php", {
               method: "POST",
@@ -2699,15 +2884,14 @@ if ($user_rjcode) {
             });
 
             const data = await res.json();
-
             if (data.success) {
               showToast('Invitation cancelled successfully!', 'success');
-
-              this.closest("li").remove();
+              this.closest(".notif-card").remove();
             } else {
               showToast(data.message, 'error');
             }
           } catch (err) {
+            console.log(err)
             showToast("Request failed. Try again later.", 'error');
           }
         });
@@ -2719,7 +2903,7 @@ if ($user_rjcode) {
         btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
-
+          console.log(action)
           try {
             const res = await fetch("invite_action.php", {
               method: "POST",
@@ -2736,7 +2920,7 @@ if ($user_rjcode) {
 
             if (data.success) {
               // Update UI with new status
-              const container = this.closest("div");
+              const container = this.closest(".notif-actions");
               container.innerHTML = `<span class="badge bg-${action === 'accept' ? 'success' : 'danger'}">
                                   ${action.charAt(0).toUpperCase() + action.slice(1)}ed
                                 </span>`;

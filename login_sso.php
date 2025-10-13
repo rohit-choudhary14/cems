@@ -53,13 +53,16 @@ if (!isset($responseData['result']) || !is_array($responseData['result'])) {
     header("location:$url");
     exit;
 } 
-$result = $responseData['result'];
 
+
+$result = $responseData['result'];
 $_SESSION['user_rjcode'] = $result['username'];
 $_SESSION['user_name'] = $result['display_name'];
 
 $_SESSION['success'] = true;
 $_SESSION['type'] = 'success';
+$_SESSION['program_icon']=$result['program_icon'];
+$_SESSION['program_name']=$result['program_name'];
 $_SESSION['message'] = 'Login successful';
 
 header('location:profile.php');
