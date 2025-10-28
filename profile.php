@@ -1991,37 +1991,15 @@ if ($user_rjcode) {
         );
         filteredHolidays.sort((a, b) => new Date(a.leave_date) - new Date(b.leave_date));
         let html = "";
-        let grouped = [];
-        for (let i = 0; i < filteredHolidays.length; i++) {
-          let current = filteredHolidays[i];
-          let currentDate = new Date(current.leave_date);
-          let currentName = current.holiday_name;
-          let startDate = currentDate;
-          let endDate = currentDate;
-          while (i + 1 < filteredHolidays.length) {
-            let next = filteredHolidays[i + 1];
-            let nextDate = new Date(next.leave_date);
-            let nextName = next.holiday_name;
-            if (nextName === currentName && (nextDate - endDate) === 86400000) {
-              endDate = nextDate;
-              i++;
-            } else {
-              break;
-            }
-          }
-          let options = {
-            day: 'numeric',
-            month: 'short'
-          };
-          let startStr = startDate.toLocaleDateString(undefined, options);
-          let endStr = endDate.toLocaleDateString(undefined, options);
-
-          if (startStr === endStr) {
-            html += `<div><strong>${startStr}:</strong> ${currentName}</div>`;
-          } else {
-            html += `<div><strong>${startStr} - ${endStr}:</strong> ${currentName}</div>`;
-          }
+        holidayListNameForRhcJaipur.sort((a, b) => {
+          return new Date(a.leave_date) - new Date(b.leave_date);
+        });
+        for (let i = 0; i < holidayListNameForRhcJaipur.length; i++) {
+          let holiday = holidayListNameForRhcJaipur[i];
+          let label = `<strong>${holiday.leave_date.split("-")[2]}:</strong> ${holiday.holiday_name}`;
+          html += `<div>${label}</div>`;
         }
+
         $("#holidayList").html(html);
       }
 
