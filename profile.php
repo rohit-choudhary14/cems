@@ -749,7 +749,7 @@ if ($user_rjcode) {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      z-index: 9999;
+      z-index: 1000000;
       display: flex;
       flex-direction: column-reverse;
       gap: 12px;
@@ -2825,6 +2825,17 @@ if ($user_rjcode) {
             (repeatVal && repeatVal !== "--NONE--" ? repeatVal : null) : null,
           reminder: parseInt(document.getElementById("reminder").value)
         };
+
+             const start = new Date(document.getElementById('start').value);
+              const end = new Date(document.getElementById('end').value);
+
+              if (start >= end) {
+                  alert();
+                  showToast("Start time must be earlier than end time!", "error");
+                  return; 
+              }
+
+
         axios.post('save_event.php', formData)
           .then((success) => {
             calendar.refetchEvents();
