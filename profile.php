@@ -1729,10 +1729,17 @@ if ($user_rjcode) {
           <label class="form-label" for="end">
             <i class="bi bi-calendar-event me-2"></i>End
           </label>
-          <input type="datetime-local" id="end" class="form-control" required>
+          <input type="datetime-local" id="end" class="form-control" required disabled>
         </div>
+        <!-- <div class="mb-3">
+          <label class="form-label" for="end">
+            <i class="bi bi-calendar-event me-2"></i>End
+          </label>
+          <input type="datetime-local" id="end" class="form-control" required>
+        </div> -->
         <div class="mb-3 invite-wrapper">
           <label for="invited_users" class="form-label">Invite People / Subordinates (Enter rjcodes)</label>
+
           <div id="selected-user-tag-container">
 
           </div>
@@ -1825,6 +1832,8 @@ if ($user_rjcode) {
     </div>
   </div>
   <div class="notification-container" id="notification-container"></div>
+
+
   <script>
     $(document).ready(function() {
       let selectedUsers = [];
@@ -1869,7 +1878,7 @@ if ($user_rjcode) {
 
             const suggestions = $('#user-suggestions');
             suggestions.empty().show();
-            console.log(suggestions)
+
             if (data.length === 0) {
               suggestions.append('<li class="list-group-item text-muted">No results</li>');
             } else {
@@ -2199,38 +2208,84 @@ if ($user_rjcode) {
 
       }
 
+      function getNow24() {
+        const n = new Date();
+        if (n.getHours() < 12) {
+          n.setHours(n.getHours() + 12);
+        }
+        return n;
+      }
+
+      function parsePgTimestamp(ts) {
+        if (!ts || typeof ts !== "string") return null;
+
+        const [date, time] = ts.split(" ");
+        if (!date || !time) return null;
+
+        const [y, m, d] = date.split("-").map(Number);
+        const [hh, mm, ss] = time.split(":").map(Number);
+
+        if ([y, m, d, hh, mm].some(isNaN)) return null;
+
+        return new Date(y, m - 1, d, hh, mm, ss || 0);
+      }
+
+
+
       function checkReminders() {
-        const now = new Date();
+        const now = getNow24();
+
         allEvents.forEach(e => {
           if (!e.start) return;
-          const key = e.id + currentUser
+          const key = e.id + currentUser;
           if (localStorage.getItem(key)) {
             return;
           }
-          const start = new Date((e.start || "").replace(" ", "T"));
-          const diffMins = (start.getTime() - now.getTime()) / 60000;
-          const remindBefore = e.reminder_before ? parseInt(e.reminder_before, 10) : 10;
-          if (diffMins > 0 && diffMins <= remindBefore) {
-            showReminder(
-              `Reminder: ${e.title}`,
-              `Your event "${e.title}" starts at ${start.toLocaleString()}`,
-              e.id
-            );
-            const calendarEvent = calendar.getEventById(e.id);
-            if (calendarEvent) {
-              const el = document.querySelector(`[data-event-id="${e.id}"]`);
-              if (el) {
-                el.classList.add("highlight-event");
-                el.addEventListener("animationend", () => {
-                  el.classList.remove("highlight-event");
-                }, {
+          const start = parsePgTimestamp(e.start);
+          if (!start) return;
+          const diffMins = Math.floor((start - now) / 60000);
+          if (diffMins < 0) return;
+
+          // ⏰ reminder_before (0 allowed)
+          const remindBefore =
+            e.reminder_before !== null && e.reminder_before !== undefined ?
+            parseInt(e.reminder_before, 10) :
+            10;
+          const shouldRemind =
+            (remindBefore > 0 && diffMins > 0 && diffMins <= remindBefore) ||
+            (remindBefore === 0 && diffMins === 0);
+
+          if (!shouldRemind) return;
+          showReminder(
+            `Reminder: ${e.title}`,
+            `Your event "${e.title}" starts at ${start.toLocaleString("en-IN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true
+            })}`,
+            e.id
+          );
+
+          // 🎯 Highlight event on calendar (optional)
+          const calendarEvent = calendar.getEventById(e.id);
+          if (calendarEvent) {
+            const el = document.querySelector(`[data-event-id="${e.id}"]`);
+            if (el) {
+              el.classList.add("highlight-event");
+              el.addEventListener(
+                "animationend",
+                () => el.classList.remove("highlight-event"), {
                   once: true
-                });
-              }
+                }
+              );
             }
           }
         });
       }
+
       setInterval(checkReminders, 10000);
 
       function formatDateLocalForMiniCalendar(date) {
@@ -2253,7 +2308,6 @@ if ($user_rjcode) {
 
 
       function showSelectedTags(selectedUsers) {
-        console.log(selectedUsers);
         const container = $('#selected-user-tag-container');
         container.find('.tag').remove();
 
@@ -2826,18 +2880,22 @@ if ($user_rjcode) {
           reminder: parseInt(document.getElementById("reminder").value)
         };
 
-             const start = new Date(document.getElementById('start').value);
-              const end = new Date(document.getElementById('end').value);
+        const start = new Date(document.getElementById('start').value);
+        const end = new Date(document.getElementById('end').value);
 
-              if (start >= end) {
-                  alert();
-                  showToast("Start time must be earlier than end time!", "error");
-                  return; 
-              }
+        if (start >= end) {
+          showToast("Start time must be earlier than end time!", "error");
+          return;
+        }
 
 
         axios.post('save_event.php', formData)
           .then((success) => {
+            const key = formData.id + currentUser;
+
+            if (localStorage.getItem(key)) {
+              localStorage.removeItem(key);
+            }
             calendar.refetchEvents();
             showToast(success.data.message, 'success');
             bootstrap.Offcanvas.getInstance(document.getElementById('eventOffcanvas')).hide();
@@ -2936,7 +2994,6 @@ if ($user_rjcode) {
         btn.addEventListener("click", async function() {
           const inviteId = this.dataset.id;
           const action = this.dataset.action;
-          console.log(action)
           try {
             const res = await fetch("invite_action.php", {
               method: "POST",
@@ -3016,8 +3073,70 @@ if ($user_rjcode) {
         setTimeout(() => notif.remove(), duration);
       }
 
+      function formatForDateTimeLocal(date) {
+        const pad = n => String(n).padStart(2, "0");
+
+        return (
+          date.getFullYear() + "-" +
+          pad(date.getMonth() + 1) + "-" +
+          pad(date.getDate()) + "T" +
+          pad(date.getHours()) + ":" +
+          pad(date.getMinutes())
+        );
+      }
+
+      const startInput = document.getElementById("start");
+      const endInput = document.getElementById("end");
+
+      startInput.addEventListener("change", function() {
+        if (!this.value) {
+          endInput.disabled = true;
+          endInput.value = "";
+          endInput.min = "";
+          return;
+        }
+
+        const startVal = normalizeDateTimeLocal(this.value);
+        endInput.disabled = false;
+        endInput.min = startVal;
+
+        // 🔥 sirf tab +1 minute lagao jab end < start
+        if (endInput.value) {
+          const endVal = normalizeDateTimeLocal(endInput.value);
+
+          if (endVal < startVal) {
+            const d = new Date(startVal);
+            d.setMinutes(d.getMinutes() + 1); // +1 minute
+
+            endInput.value = formatForDateTimeLocal(d);
+          }
+        }
+      });
+
+      endInput.addEventListener("change", function() {
+        const startVal = normalizeDateTimeLocal(startInput.value);
+        const endVal = normalizeDateTimeLocal(this.value);
+
+        if (startVal && endVal < startVal) {
+          showToast("End time cannot be earlier than start time", "error");
+          const d = new Date(startVal);
+          d.setMinutes(d.getMinutes() + 1); // +1 minute
+
+          this.value = formatForDateTimeLocal(d);
+        }
+
+      });
+
+      function normalizeDateTimeLocal(val) {
+        if (!val) return "";
+        if (val.includes("T")) return val.slice(0, 16);
+        return val.replace(" ", "T").slice(0, 16);
+      }
     });
   </script>
+
+
+
 </body>
 
 </html>

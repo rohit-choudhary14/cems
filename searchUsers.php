@@ -8,25 +8,31 @@ if (!isset($_SESSION['user_rjcode'])) {
     echo json_encode([]);
     exit;
 }
-
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
 if (strlen($q) < 2) {
     echo json_encode([]);
     exit;
 }
-
-// Case-insensitive search by username or display_name
-$stmt = $pdo->prepare("
+$sql = "
     SELECT username AS rjcode, display_name
     FROM intra_users
-    WHERE LOWER(username) LIKE LOWER(:search)
-       OR LOWER(display_name) LIKE LOWER(:search)
+    WHERE
+        (
+            username ILIKE :search
+            OR display_name ILIKE :search
+        )
+        AND (
+            username ILIKE 'RJ%'
+            OR username ILIKE 'CRT%'
+        )
+";
 
-");
+$stmt = $pdo->prepare($sql);
 
-$searchTerm = "%$q%";
-$stmt->execute(['search' => $searchTerm]);
+$stmt->execute([
+    ':search' => "%{$q}%"
+]);
 
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

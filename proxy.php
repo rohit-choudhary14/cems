@@ -36,7 +36,7 @@ $requestPayload = [
 $encryptedData = encrypt_common_fun(json_encode($requestPayload));
 
 // Send encrypted request to actual API
-$ch = curl_init('http://10.130.8.95/joassessment_api/calendar_api.php');
+$ch = curl_init('http://164.100.222.238/api/joassessment_api/calendar_api.php');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, ['data' => $encryptedData]);
