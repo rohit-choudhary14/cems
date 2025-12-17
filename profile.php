@@ -1200,7 +1200,18 @@ if ($user_rjcode) {
       }
     }
   </style>
+  <style>
+    @media (max-width: 768px) {
+      .navbar img {
+        height: 50px !important;
+      }
 
+      .navbar .navbar-brand {
+        margin-left: 10px !important;
+        font-size: 18px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -2209,11 +2220,7 @@ if ($user_rjcode) {
       }
 
       function getNow24() {
-        const n = new Date();
-        if (n.getHours() < 12) {
-          n.setHours(n.getHours() + 12);
-        }
-        return n;
+        return new Date();
       }
 
       function parsePgTimestamp(ts) {
@@ -2232,6 +2239,7 @@ if ($user_rjcode) {
 
 
 
+
       function checkReminders() {
         const now = getNow24();
 
@@ -2242,8 +2250,10 @@ if ($user_rjcode) {
             return;
           }
           const start = parsePgTimestamp(e.start);
+          console.log(start);
           if (!start) return;
           const diffMins = Math.floor((start - now) / 60000);
+          console.log(diffMins);
           if (diffMins < 0) return;
 
           // ⏰ reminder_before (0 allowed)
